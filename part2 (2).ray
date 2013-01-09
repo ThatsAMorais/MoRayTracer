@@ -1,0 +1,100 @@
+begin_frame
+
+  begin_scene
+    background .4 .4 .4
+	
+	# positional light
+	begin_light
+		position 3 3 1
+		color 0.7 0.7 0.0
+	end_light
+
+   # positional light
+	begin_light
+		position -3 3 1
+		color 0.7 0.0 0.0
+	end_light
+	
+    # directional light
+    begin_light
+      direction 1 1 1
+      color 0.7 0.7 0.7
+    end_light	
+
+    # upper right light blue sphere mirror
+    begin_sphere
+      position 1.5 -1.5 1
+      radius .4
+      begin_material
+	    ambient .1 .1 .1
+        color .5 .5 1
+		phong 80
+		reflectivity 0 0 0
+      end_material
+    end_sphere
+
+    # upper left light blue sphere
+    begin_sphere
+      position -1.5 -1.5 0
+      radius .4
+      begin_material
+	    ambient .1 .1 .1
+        color .5 .5 1
+		phong 80
+		reflectivity 0 0 0
+      end_material
+    end_sphere
+	
+    # left green sphere
+    begin_sphere
+      position .9 0 .5
+      radius .4
+      begin_material
+	    ambient .1 .1 .1
+        color 0 .9 0
+		phong 15
+		reflectivity 0 0 0
+      end_material
+    end_sphere
+
+    # right green sphere
+    begin_sphere
+      position -.9 0 0
+      radius 1
+      begin_material
+	    ambient .1 .1 .1
+        color 0 .9 0
+		phong 25
+		reflectivity 0 0 0
+      end_material
+    end_sphere
+
+    # center red sphere
+    begin_sphere
+      position 0 0 0
+      radius 1.1
+      begin_material
+	    ambient .1 .1 .1
+        color .9 0 0
+		phong 10
+		reflectivity 0 0 0
+      end_material
+    end_sphere
+
+  end_scene
+
+  begin_view
+    coi    0 0 0
+    eye    0 0 10
+    eye    0 0 15
+    eye    0 0 5
+    vwidth 1
+    aspect 1.0
+    xres   1000
+    focal  2
+    focal  3
+    focal  1
+    up     0 1 0
+  end_view
+
+end_frame

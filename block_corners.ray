@@ -1,7 +1,7 @@
 begin_frame
 
   begin_scene
-    background 0.33 0.0 0.6
+    background .44 .11 .0
 
     # directional light
     begin_light
@@ -17,7 +17,7 @@ begin_frame
 
     # upper left light blue sphere
     begin_sphere
-      position -1 2.5 1.0
+      position 2.5 1.5 1.76
       radius .3
       begin_material
         color .5 .5 1
@@ -27,17 +27,15 @@ begin_frame
       end_material
     end_sphere
 
-	# upper right light red sphere
+	# upper right light blue sphere
     begin_sphere
-      position 1 7.3 -3
-      radius 2.8
+      position 3.5 0.5 -6.5
+      radius .8
       begin_material
         color .75 .25 .1
         ambient .3 .4 .5
         phong 5
-        reflectivity 1 1 1
-		refract_extinct 1.0 1.5 1.5
-		refract_index 1.0
+        reflectivity .7 .7 .7
       end_material
     end_sphere
 
@@ -50,7 +48,6 @@ begin_frame
         ambient .3 .4 .5
         phong 2
         reflectivity .4 .4 .4
-		texture "sphere_tex.ppm"
       end_material
     end_sphere
 
@@ -75,7 +72,7 @@ begin_frame
         ambient .3 .4 .5
         color 0 0 0
         phong 17
-		reflectivity 1 1 1
+		reflectivity .9 .9 .9
       end_material
     end_poly
 
@@ -104,10 +101,7 @@ begin_frame
         ambient .3 .4 .5
         color .5 .65 .25
         phong 15
-		#reflectivity .7 .7 .7
-		refract_extinct 1.2 1.2 1.2
-		refract_index 1.0
-		#refract_index 1.46
+		reflectivity .7 .7 .7
       end_material
     end_poly
 
@@ -120,15 +114,12 @@ begin_frame
 	eye    0 5 15  # assign2_eye_0-5-15
 	#eye    0 0 5   # assign2_eye_0-0-5
     vwidth 1
-	#aspect 1.78
-	#aspect 1.33
-	aspect 1
-    xres  600
+    aspect 1.78
+    xres   500
     focal  2
     focal  3
     focal  1
     up     0 1 0
-	n		4
   end_view
 
 end_frame

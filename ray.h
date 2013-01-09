@@ -27,9 +27,6 @@ class ray_t
 		gmVector3 get_p(void){ return p; }
 		void set_p( double t ){ p = (origin + (t * dir_norm)); }
 
-		//double get_refr_index( void ){ return currRefractiveIndex; }
-		//void set_refr_index( double n ){ currRefractiveIndex = n; }
-		
   		friend std::ostream& operator << ( std::ostream& os, const ray_t& );
   		//  ensures: A representation of the ray is printed to os.
 
@@ -38,21 +35,14 @@ class ray_t
 		gmVector3 dir;          // Direction ray points
 		gmVector3 dir_norm;     // Normalized ray direction
 		gmVector3 p;			// the equation of the ray
-		//double currRefractiveIndex;	//the refractive index through
-										// which this ray is traveling
 };
 
 inline void ray_t::set_dir( gmVector3 direction )
-{ 
+{
   assert( direction.length() > gmEPSILON );
   this->dir = direction;
   this->dir_norm = direction;
   this->dir_norm.normalize();
-
-  // this is the point of initialization of this var
-  //  This implies a restriction that this flag must
-  //  be set AFTER the direction of the ray is set.
-  //bIgnoreEdges = false;
 }
 
 inline std::ostream& operator << ( std::ostream& os, const ray_t& r )

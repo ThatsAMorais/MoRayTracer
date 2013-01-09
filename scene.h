@@ -58,46 +58,15 @@ class Scene{
 		void calcNextBGColor( int y, int numYPixels );
 		bool getHasTwoColors( void ){ return hasTwoBGColors; }
 
-		// checks each object for a collision with 'ray' and returns
-		//  the nearest one.
-		surface_t* checkIntersections(ray_t& ray, double t0, double t1, 
+		//
+		material* checkIntersections(ray_t& ray, double t0, double t1, 
 				hit_t& hit, double time, bool checkOne=false);
 
-		// CalcColAtPoint functions ////////////////
-		bool calcEdge(surface_t* surface, ray_t& ray, hit_t& hit);
-		
-		// copperplate engraving simulation - hatching lines
-		gmVector3 calcHatching(surface_t* surface, ray_t& ray, hit_t& hit, 
-				gmVector3 finalColor);
-
-		// texture mapping
-		gmVector3 calcTexColor(surface_t* surface, ray_t& ray, hit_t& hit);
-
-		// Phong
-		gmVector3 calcPhongColor(material* surfaceMat, ray_t& ray,
-				hit_t& hit, gmVector3 matColor, double time, 
-				gmVector3 eye);
-
-		gmVector3 calcReflectColor(material* surfaceMat, ray_t& ray,
-				hit_t& hit, int recDepth, int numRaysToCast, double time);
-
-		gmVector3 calcRefractColor(material* surfaceMat, ray_t& ray,
-				hit_t& hit, gmVector3 currentCol, int recDepth,
-				int numRaysToCast, double time);
-		////////////////////////////////////////////////////////////////////
-
-		// Calculates the overall color at a point.
-		// This includes the above functions beginning with "calc"
-		gmVector3 calcPointColor(surface_t* surface, ray_t& ray, 
+		//
+		gmVector3 calcPointColor(material* surfaceMat, ray_t& ray, 
 				hit_t& hit, gmVector3 eye, int recDepth, double time);
 
-		// bends a ray's direction according to the refractive
-		//  index
-		bool refractRay(gmVector3 d, gmVector3 n, 
-				double prevIndex, double nextIndex, 
-				ray_t& t, double dDOTn);
-
-		// returns the list of surfaces/lights in the scene
+		//
 		surfaceList* getSurfaceList() { return &surfacesInScene; }
 		lightList* getLightList() { return &lightsInScene; }
 

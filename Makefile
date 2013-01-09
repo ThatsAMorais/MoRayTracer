@@ -1,4 +1,4 @@
-##############################################################################
+###############################################################################
 #    file: makefile for ray.cc
 #  author: J. Edward Swan II
 # created: 1-17-2005
@@ -8,7 +8,7 @@
 
 MAIN	=	mray.exe
 
-SRCS    =	mray.cc view.cc surface.cc surfaces.cc scene.cc material.cc hatch_set.cc functions.cc
+SRCS    =	mray.cc view.cc surface.cc surfaces.cc scene.cc material.cc functions.cc
 OBJS	=	$(SRCS:.cc=.o)
 
 ###############################################################################
@@ -18,18 +18,18 @@ INCLUDE 	= -I../libgm
 DEFINES 	= 
 LDFLAGS		=
 LIBDIR		= -L../libgm
-LIBS		= -lgm -lm -lpthread -ffast-math
+LIBS		= -lgm -lm -lpthread
 
 # For an optimized version, put this definition last.  This will substantially
 # accelerate your program.  The "-DNDEBUG" removes assertions.  The "-O2" flag
 # will cause inlined functions to actually be inlined.  This will cause a
 # substantial amount of acceleration, because the libgm library makes
 # substantial use of inlined functions.
-OPTIM		= -DNDEBUG -O2
+#OPTIM		= -DNDEBUG -O2
 # For a debug version, put this definition last.  "-Wall" prints copious,
 # lint-type error messages.  "-g" produces a symbol table suitable for a
 # debugger such as GDB.
-#OPTIM		= -Wall -g
+OPTIM		= -Wall -g
 
 # Collect all the compilation settings
 CPPFLAGS	= $(OPTIM) $(INCLUDE) $(DEFINES)

@@ -78,7 +78,7 @@ void sphere::read( std::istream& ins ){
 	}
 }
 
-surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time ){
+bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time ){
 
 	double radiusAtT,
 		   radiusSqrd;
@@ -119,12 +119,8 @@ surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, doub
 	
 	bool bRayOriginOutsideSphere = false;
 	
-	radiusSqrd = radiusAtT*radiusAtT;
 	// Is r.origin inside or outside the sphere?
-	//if( ocLenSqrd >= radiusAtT*radiusAtT )
-	if( gmFuzGEQ( ocLenSqrd, radiusSqrd ) )
-		bRayOriginOutsideSphere = true;
-	else if( ocLenSqrd > radiusSqrd )
+	if( ocLenSqrd >= radiusAtT*radiusAtT )
 		bRayOriginOutsideSphere = true;
 	
 	//
@@ -141,7 +137,7 @@ surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, doub
 	// if sphereCenter is behind ray.origin
 	if( bRayOriginOutsideSphere && tca < 0 ){
 		//hit.setT( numeric_limits<double>::infinity() );
-		return NULL;	// --> MISS
+		return false;	// --> MISS
 	}
 
 	//
@@ -153,7 +149,7 @@ surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, doub
 
 	if( bRayOriginOutsideSphere && thcSqrd < 0 ){
 		//hit.setT( numeric_limits<double>::infinity() );
-		return NULL;
+		return false;
 	}
 
 	//
@@ -166,7 +162,7 @@ surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, doub
 		tempT = tca + sqrt(thcSqrd);
 
 	if( (tempT > t1) || (tempT < t0) ){
-		return NULL;
+		return false;
 	}
 
 	// set the t value
@@ -181,7 +177,7 @@ surface_t* sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, doub
 	// store the normal in the hit
 	hit.setNormal( vec );
 
-	return (surface_t*)this;
+	return true;
 }
 
 void sphere::print( std::ostream& os ){
@@ -192,35 +188,37 @@ void sphere::print( std::ostream& os ){
 ///////////// class plane /////////////////////////////////////////////////
 ////
 ///
+//
 plane::plane( void ){}
 plane::~plane( void ){}
 
 bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTransform, gmMatrix4 T){
-
-	double denom = dot( ray.get_dir_norm(), normal );
 	
-	if( gmFuzEQ(denom, 0) ){	
-		return false;
-	}
-
 	// calculate the time transformation of this face
-	vector<gmVector4*> vertsAtT;
+	vector<gmVector4> vertsAtT;
 
 	if( doTransform ){
 		for( unsigned i=0; i < vertices.size(); i++ ){
-			gmVector4 vert = T * (*(vertices[i]));
-			vertsAtT.push_back( new gmVector4( vert ) ); //
+			// causing an St9bad_alloc //
+			vertsAtT.push_back( gmVector4( T * (*(vertices[i])) ) ); //
+			/////////////////////////////
 		}
 	}
 	else{
-		/*for( unsigned i=0; i < vertices.size(); i++ ){
-			gmVector4 vert = *(vertices[i]);
-			vertsAtT.push_back( new gmVector4(vert)  ); //
-		}*/
-		vertsAtT = vertices;
+		for( unsigned i=0; i < vertices.size(); i++ ){
+			// causing an St9bad_alloc //
+			vertsAtT.push_back( gmVector4( (*(vertices[i])) ) ); //
+			/////////////////////////////
+		}
 	}
 
-	gmVector3 p0 = FourToThree( vertsAtT[0] );
+	double denom = dot( ray.get_dir_norm(), normal );
+	
+	if( gmFuzEQ(denom, 0) ){
+		return false;
+	}
+	
+	gmVector3 p0 = FourToThree( &vertsAtT[0] );
 	double t = dot( (p0 - ray.get_origin()) , normal );
 	t = t / denom;
 
@@ -229,7 +227,7 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 		int u, v;
 		gmVector3 p = ray.get_origin() + t*ray.get_dir_norm();
 			
-		// determine which axis plane to which to flatten the surface
+		// determine which axis plane to flatten the surface to
 		if( ( gmAbs(normal[2]) > gmAbs(normal[0]) ) && 
 				( gmAbs(normal[2]) > gmAbs(normal[1]) ) )
 		{
@@ -248,18 +246,22 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 		vector<gmVector3> tempVerts;
 
 		// convert the coords of the poly to 2-space
-		vector<gmVector4*>::iterator vertexIter;
+		vector<gmVector4>::iterator vertexIter;
 		for( vertexIter = vertsAtT.begin();
 				vertexIter != vertsAtT.end();
 				vertexIter++)
 		{
-			gmVector4* vertPtr = (*vertexIter),
-				vert = *vertPtr;
+			gmVector4 vertPtr = (*vertexIter);
 	
-			// poosh thuh nu vecta onduh leest
-			tempVerts.push_back( gmVector3( ( vert[u] - p[u] ), 
-						( vert[v] - p[v] ) ,0) );
+			// push the nu vecta onda list
+			tempVerts.push_back( gmVector3( ( vertPtr[u] - p[u] ), 
+						( vertPtr[v] - p[v] ) ,0) );
 		}
+
+		// destroy the obsolete data and prevent a memory leak
+		//for( unsigned index=0; index < vertsAtT.size(); index++ )
+		//	delete vertsAtT[index];
+		//vertsAtT.clear();
 
 		// Begin the 2D Point-in-Polygon algo //
 		// ////////////////////////////////// //
@@ -295,7 +297,7 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 				continue; // no cross
 			}
 
-			// if the current u coord is > 0 and the previous u coord is > 0...
+			// if the current u coord is > 0 and the previous u coord is > 0 ...
 			if( (ua > 0) &&	(ub > 0) ){
 				nc++;		// edge crosses the +u axis
 			}
@@ -314,20 +316,8 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 			hit.setT(t);
 			hit.setNormal( normal );
 
-			if( doTransform ){
-				// destroy the dynamic data
-				for(unsigned c=0; c < vertsAtT.size(); c++)
-					delete vertsAtT[c];
-			}
-
 			return true;
 		}
-	}
-
-	if( doTransform ){
-		// destroy the dynamic data
-		for(unsigned c=0; c < vertsAtT.size(); c++)
-			delete vertsAtT[c];	
 	}
 
 	return false;
@@ -339,24 +329,6 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 ///
 //
 polygon::polygon( void ){}
-
-polygon::polygon( vertexPtrList transformedVerts ){//, planeList planes ){
-
-	for( unsigned int v=0; v < transformedVerts.size(); v++)
-		vertices.push_back( new gmVector4( *transformedVerts[v] ) );
-
-	//polyList = planes;
-	edgePoly = NULL;
-
-	// init the vars
-	mat = material();
-	timeTransform = gmMatrix4::identity();
-	transformMatrix = gmMatrix4::identity();
-	edgePoly = NULL;
-
-	changesWithTime = false;
-}
-
 polygon::~polygon( void ){}
 
 void polygon::read( std::istream& ins ){
@@ -372,7 +344,6 @@ void polygon::read( std::istream& ins ){
 	mat = material();
 	timeTransform = gmMatrix4::identity();
 	transformMatrix = gmMatrix4::identity();
-	edgePoly = NULL;
 
 	// Oh, this is just some boolshit over here
 	changesWithTime = false;
@@ -436,10 +407,10 @@ void polygon::read( std::istream& ins ){
 
 				vertPtr = vertices[vertIndex];
 				aPlane->addVertex(vertPtr);
-				aPlane->addIndex(vertIndex);
 
 				// access the next token of the last str input
 				token = strtok(NULL, " ");
+
 			}
 
 			// 
@@ -479,6 +450,7 @@ void polygon::read( std::istream& ins ){
 		gmVector4* vertex = (*vertexIter);
 		*vertex = transformMatrix * (*vertex);
 	}
+	
 
 	// calc face normals
 	planeList::iterator planeIter;
@@ -498,63 +470,9 @@ void polygon::read( std::istream& ins ){
 		normal.normalize();
 		(*planeIter).setNormal( normal );
 	}
-
-	// if this poly has edges, make an edge poly from this poly
-	if( mat.hasEdges() ){
-
-		// instantiate an edge poly
-		edgePoly = new polygon( vertices); //, polyList );
-		// get the edge width for calculating the new vertices
-		double edgeWidth = mat.getEdgeThickness();
-
-		// set the edge color
-		edgePoly->mat.setColor( mat.getEdgeColor() );
-
-		// loop over the planes in *this* poly, 
-		//  ultimately translating the vertices in the edge poly
-		for( unsigned int i=0; i < polyList.size(); i++ ){
-
-			// get the current face of *this* poly
-			plane currFace = polyList[i];
-			gmVector3 norm = currFace.getNormal();
-			gmVector4 currFaceNormal = ThreeToFour( &norm );
-			
-			plane* aPlane = new plane();
-			vector<int> faceVertIndices = currFace.getVertexIndices();
-
-			// loop over the edge poly's vertices
-			for( int v=0; v < currFace.getNumVertices(); v++ ){
-
-				// calculate the edge poly's scaled-up vertex
-				(*(edgePoly->vertices[ faceVertIndices[v] ])) += edgeWidth*currFaceNormal;
-				aPlane->addVertex( edgePoly->vertices[ faceVertIndices[v] ] );
-				aPlane->addIndex( v );
-			}
-
-			edgePoly->polyList.push_back(*aPlane);
-		}
-
-		// calc face normals of the edge poly's faces
-		
-		for( int n=0; n < edgePoly->polyList.size(); n++ ){
-			// make 3d vectors out of the 4d vertices
-			plane aPlane = edgePoly->polyList[n];
-			vertexPtrList vertices = *(aPlane.getVertices());
-			gmVector3 p0 = FourToThree( vertices[0] ),
-					  p1 = FourToThree( vertices[1] ),
-					  p2 = FourToThree( vertices[2] );
-
-			// normal = (p2-p1) x (p0-p1)
-			gmVector3 normal = cross( (p2 - p1), (p0 - p1) );
-			normal.normalize();
-
-			// set the normal
-			edgePoly->polyList[n].setNormal( normal );
-		}
-	}	
 }
 
-surface_t* polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time){
+bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time){
 
 	bool intersected = false,
 		 doTransform = false;
@@ -567,37 +485,26 @@ surface_t* polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit, dou
 	}
 
 	// iterate over the faces of this polygon
-	//planeList::iterator polyIter;
-	//for(polyIter = polyList.begin();
-	for(unsigned poly = 0;
-			poly != polyList.size();
-			poly++)
+	planeList::iterator polyIter;
+	for(polyIter = polyList.begin();
+			polyIter != polyList.end();
+			polyIter++)
 	{
+
 		// call the intersect function
-		if( (polyList[poly]).intersect(ray, t0, t1, hit, doTransform, transAtTime) ){
+		if( ((*polyIter).intersect(ray, t0, t1, hit, doTransform, transAtTime)) ){
+
 			intersected = true;
 
 			t1 = hit.getT();
-			hit.setHitFaceIndex(poly);
 		}
 	}
 
 	if( intersected ){
-		return (surface_t*)this;
-	}
-	else if( mat.hasEdges() && (edgePoly != NULL) ){
-		//cerr << " checking edge poly ";
-
-		surface_t* retObj = edgePoly->intersect(ray, t0, t1, hit, time);
-
-		if( retObj != NULL ){
-			//cerr << "returning the edge" << endl;
-			return (surface_t*)edgePoly;
-		}
+		return true;
 	}
 
- 
-	return NULL;
+	return false;
 }
 
 void polygon::print( std::ostream& os ){

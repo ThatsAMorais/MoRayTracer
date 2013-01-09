@@ -1,0 +1,43 @@
+Directions for executing hw2_ex2
+
+Compiling::
+
+	run the MakeFile using the Unix command "make" within the folder containing
+	the program source OR the condensed file can be compiled for the same 
+	result**.
+
+	amm179@pluto>> make
+
+	OR
+
+	amm179@pluto>> g++ "hw2_ex2(condensed into one).cpp" -o hw2_ex2
+
+Executing::	
+
+	To execute, the command line arguments are as follows..
+	
+	amm179@pluto>>./hw2_ex2 #Prod #Con #ofIntsToProducePerProd
+	
+	In plain english, the first two arguments are the number of producers and
+	consumers.  The third argument is the number of integers that each producer
+	thread will produce to the FIFO.  So if each producer should produce 10
+	integers, put a 10 in that argument.  The program will not allow less than
+	10 as an argument.  Also, the program will disallow any more than 10 and 0 prods.
+	and cons..
+
+Notes::
+
+	This code will execute properly most of the time.  It has a bug in it where
+	sometimes when it is executed the consumers somehow get created ahead of the
+	producers(despite the producer creation code being before the consumer creation
+	code) and then close themselves.  Before I added the functionality that allows
+	the consumers to close themselves it would do something similar except it would
+	only create one consumer and hang without ever having created the producers.
+	I could not determine what caused it, but because reexecution of the code did
+	not produce the effect every time I presumed it was less probable than the 
+	correct execution.  So to reiterate, the program is very nearly perfect despite
+	this bug.
+	
+**You can either just compile the file hw2_ex2(condensed into one).cpp or you can
+use the "make" command in Unix to compile all of the files into the executable,
+hw2_ex2
