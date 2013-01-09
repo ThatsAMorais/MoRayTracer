@@ -1,0 +1,245 @@
+begin_frame
+
+  begin_scene
+    background	.78 .216 .098
+	#background2 .798 .498 .182
+
+    # directional light
+    #begin_light
+    #  direction 0 1 0
+    #  color 1 .5 1
+    #end_light
+
+	# directional light
+	begin_light
+		position -7.5 -3 -2.5
+		#color 1 1 1
+		color 1 1 1
+	end_light
+
+    # positional light
+    begin_light
+      position 10 -8 -6
+      color 1 1 0.5
+    end_light
+
+	# positional light
+	#begin_light
+    #  position -2 .5 -490
+    #  color .98 .416 .098
+	#end_light
+
+    # upper left light blue sphere
+    begin_sphere
+      position 1.25 3.5 1.76
+      radius .39
+      begin_material
+        color .5 .5 1
+        ambient .3 .4 .5
+        phong 7
+        reflectivity 1 1 1
+		refract_extinct 1.5 1.5 1.5
+		refract_index 2.417
+      end_material
+    end_sphere
+
+	# upper left red sphere
+    begin_sphere
+      position .65 4.5 2.0
+      radius .47
+      begin_material
+        color 1 .5 .5
+        ambient .3 .4 .5
+        phong 7
+        reflectivity 1 1 1
+		b 0.55
+		y 0.3
+		alpha 0.25
+		beta 0.5
+      end_material
+    end_sphere
+
+
+	# front right red sphere
+    begin_sphere
+      position 5.8 5 1.5
+      radius 1.3
+      begin_material
+	    #color .98 .98 .98
+		#color 1 1 1
+	  	color 0.4 0 0
+		ambient .3 .4 .5
+        phong 1
+        #reflectivity 1 1 1
+		#gloss .3
+		#refract_extinct 1.5 1.5 1.5
+		#refract_extinct 1.5 1.0 1.5
+		#refract_index 1.94
+		begin_hatch
+			hb 1.0
+			hf 1.0
+			begin_lamina
+				a 1.5
+				e 5 7 5 5
+				c 1.0
+				d 1.0
+			end_lamina
+			begin_lamina
+				a 0.6
+				e 3 -1 3 3
+				c 1.0
+				d 1.0
+			end_lamina
+		end_hatch
+		edge_width 0.2
+	  end_material
+    end_sphere
+
+	# back right sphere
+    begin_sphere
+      position -1.5 9 -13.5
+      radius 2.5
+      begin_material
+		#color 0.15 .25 .5
+		#color 0.5 .25 .15
+	    color 1 1 1
+        ambient .3 .4 .5
+        phong 16
+		reflectivity 1 1 1
+		refract_extinct 0 0 0
+		refract_index 1.0
+		b 0.55
+		y 0.3
+		alpha 0.25
+		beta 0.5
+      end_material
+    end_sphere
+	
+	# the sun
+    begin_sphere
+      position -95 .5 -490
+      radius 100.7
+	  time_xform	1 0 0 -5
+	  				0 2 0 -1
+					0 0 2 -60
+					0 0 0 1
+      begin_material
+        color .98 .416 .098
+        ambient .3 .4 .5
+		phong 30
+      end_material
+    end_sphere
+
+
+# a pyramid consisting of 4 triangles and a plane
+	begin_poly
+      vertex  0  1  0 # 0
+      vertex  1 -1  1 # 1
+      vertex  1 -1 -1 # 2
+      vertex -1 -1 -1 # 3
+      vertex -1 -1  1 # 4
+      poly 1 4 0		# back left
+      poly 2 1 0		# back right
+      poly 4 3 2 1		# the bottom
+      poly 4 3 0		# front left
+      poly 3 2 0		# front right
+      transform 2.59808 0 	1.5 	-2
+	  			0 		3 	0 		4
+				-1.5 	0	2.59808	-2
+				0 		0 	0 		1
+#      time_xform	1 0 0 1
+#	  				0 1 0 2.5
+#					0 0 1 1
+#					0 0 0 1
+	  begin_material
+        ambient .3 .4 .5
+        color 0.0 0.0 0.0
+        phong 1
+		reflectivity 1 1 1
+		#refract_extinct 1.1 1.0 1.0
+		refract_extinct 1 1 1
+		refract_index 1.0
+		#gloss 0.05
+		#blur 0.05
+		begin_hatch
+			hb 1.0
+			hf 1.0
+			#begin_lamina
+			#	a 1.5
+			#	e 5 7 5 5
+			#	c 1.0
+			#	d 1.0
+			#end_lamina
+			begin_lamina
+				a 0.6
+				e 3 3 3 3
+				c 1.0
+				d 1.0
+			end_lamina
+		end_hatch
+
+      end_material
+    end_poly
+
+    # the sand
+    begin_poly
+      vertex  1  1  1 # 0
+      vertex  1  1 -1 # 1
+      vertex -1  1 -1 # 2
+      vertex -1  1  1 # 3
+	  #vertex  1 -1  1 # 4
+      #vertex  1 -1 -1 # 5
+      #vertex -1 -1 -1 # 6
+      #vertex -1 -1  1 # 7
+      poly 0 1 2 3
+      #poly 4 5 1 0
+      #poly 7 6 5 4
+      #poly 3 2 6 7
+      #poly 0 3 7 4
+      #poly 1 5 6 2
+      transform  38.637 0 10.3528 0
+	  			 0 		1 0 	.25
+				 -10.3528 0 38.637 0
+				 0 		0 0 	1 
+	  #time_xform 1 0 0 0
+	  #			 0 1 0 -0.5
+	  #			 0 0 1 0
+	  #			 0 0 0 1
+	  begin_material
+        ambient .3 .4 .5
+        color .5 .65 .25
+        phong 30
+		reflectivity .51 .51 .51
+		#gloss .8
+		texture "sphere_tex.ppm"
+      end_material
+    end_poly
+
+  end_scene
+
+  begin_view
+	#coi    3 4 0
+	coi   -35 50 -400
+  	#coi		0 4 0
+  	#coi		3 4 0
+    eye    0 0 10
+	eye    3.25 3 13  # assign2_eye_0-5-15
+	#eye    0 0 5   # assign2_eye_0-0-5
+	#eye    6 3 9
+    vwidth 1
+    #aspect 1.6		# 16:10
+	#xres	1280
+	#xres	1600
+	#xres	400
+	#aspect 1.333	# 4:3
+	#xres	1600
+	aspect	1.0		# 1:1
+	xres	1000
+	focal	2
+    focal	3
+	focal	1
+    up		0 1 0
+	n		4
+  end_view
+
+end_frame

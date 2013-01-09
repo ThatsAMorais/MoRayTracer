@@ -10,35 +10,97 @@
 #include <fstream>
 #include <cstdlib>
 #include "material.h"
-//#include <>	// an image library
+
+material::material( void ){
+
+	bShadingOn = false;
+	bToneShadingOn = false;
+	bIsDielectric = false;
+	bIsReflective = false;
+	bIsTextureMapped = false;
+	bHasEdges = false;
+	bHasHatches = false;
+
+	// init the material properties
+	// mat color
+	color = gmVector3();
+	// phong shading
+	phongExp = 1;
+	ambient = gmVector3();
+	// edges
+	edgeColor = gmVector3(0.0, 0.0, 0.0);
+	edgeWidth = 0.3;
+	// reflection/gloss
+	reflectivity = gmVector3();
+	gloss = 0.0;
+	// refraction/blue
+	blur = 0.0;
+	refrExtinction = gmVector3();
+	refrIndex = 0.0;
+	// tex mapping
+	texMap = NULL;
+	// tone shading
+	toneParam_b = 0.5;
+	toneParam_y = 0.5;
+	toneParam_alpha = 0.25;
+	toneParam_beta = 0.25;
+}
+
+material::~material( void ){}
 
 void material::read( std::istream& ins ){
 	
-	std::string cmd;                    // Buffer to hold each command
+	std::string cmd;               // Buffer to hold each command
 	bool   seen_end_tag  = false;  // Stop reading at end of view block
-	bool   seen_color = false;     // Must see each command
+	bool   seen_color = false;     // Must see each of these commands for
+								   // all of the features to work
+	// Phong bools
 	bool   seen_ambient = false;
 	bool   seen_phong = false;
+
+	// refraction bools
 	bool   seen_extinct = false;
 	bool   seen_refr_index = false;
+
+	// tone shading bools
+	bool	seen_b = false;
+	bool	seen_y = false;
+	bool	seen_alpha = false;
+	bool	seen_beta = false;
 
 	//// initialize private data ////
 	// init the material booleans
 	bShadingOn = false;
+	bToneShadingOn = false;
 	bIsDielectric = false;
 	bIsReflective = false;
 	bIsTextureMapped = false;
+	bHasEdges = false;
+	bHasHatches = false;
 
 	// init the material properties
-	ambient = gmVector3();
+	// mat color
 	color = gmVector3();
+	// phong shading
 	phongExp = 1;
+	ambient = gmVector3();
+	// edges
+	edgeColor = gmVector3(0.0, 0.0, 0.0);
+	edgeWidth = 0.3;
+	// reflection/gloss
 	reflectivity = gmVector3();
 	gloss = 0.0;
+	// refraction/blue
 	blur = 0.0;
 	refrExtinction = gmVector3();
 	refrIndex = 0.0;
+	// tex mapping
 	texMap = NULL;
+	// tone shading
+	toneParam_b = 0.5;
+	toneParam_y = 0.5;
+	toneParam_alpha = 0.25;
+	toneParam_beta = 0.25;
 	///////////
 		
 	// Loop and read until we reach the end of the view construct
@@ -54,29 +116,81 @@ void material::read( std::istream& ins ){
 		}
 		// Detect end of the block
 		else if( cmd == this->end_tag() ){seen_end_tag = true; 	}
+		
 		// Read in commands
 		else if( cmd == "color" ){			// color
 			ins >> color;
 			color.clamp(0.0, 1.0);
 			seen_color = true;
 		}
+
 		// ambient
 		else if( cmd == "ambient" ){
 			ins >> ambient;	
 			seen_ambient = true; 
 		}
+
 		// phong
 		else if( cmd == "phong" ){
 			ins >> phongExp;	
 			seen_phong = true;	
 		}
-		// reflectivity
+
+		// Edges ////
+		else if( cmd == "edge_width" ){
+			// edge width
+			ins >> edgeWidth;
+
+			if( edgeWidth > 0 ){
+				//edgeWidth += 1;
+				bHasEdges = true;
+			}
+		}
+		else if( cmd == "edge_color" ){
+			// edge color
+			// get the color
+			ins >> edgeColor;
+			// set the edge bool
+			bHasEdges = true;
+		}
+		////
+
+		// Copperplate Engraving ////
+		else if( cmd == "begin_hatch" ){
+			if( hatches.read( ins ) )
+				bHasHatches = true;
+		}
+		////
+
+		// Tone shading params ////
+		else if( cmd == "b" ){
+			ins >> toneParam_b;
+			seen_b = true;
+		}
+		else if( cmd == "y" ){
+			ins >> toneParam_y;
+			seen_y = true;
+		}
+		else if( cmd == "alpha" ){
+			ins >> toneParam_alpha;
+			seen_alpha = true;
+		}
+		else if( cmd == "beta" ){
+			ins >> toneParam_beta;
+			seen_beta = true;
+		}
+		////
+
+		// Reflectivity ////
 		else if( cmd == "reflectivity" ){ 
 			ins >> reflectivity;
 			if( reflectivity.length() != 0 )
 				bIsReflective = true;
 		}
-		// refractivity extinction
+		else if( cmd == "gloss" ){ ins >> gloss; }
+		////
+
+		// Refractivity ////
 		else if( cmd == "refract_extinct" ){
 			// get the extinction coeffs
 			gmVector3 coeffs;
@@ -93,16 +207,14 @@ void material::read( std::istream& ins ){
 			//
 			seen_extinct=true;	
 		}
-		// refractive index
 		else if( cmd == "refract_index" ){
 			ins >> refrIndex;
 			seen_refr_index=true;
 		}
-		// gloss
-		else if( cmd == "gloss" ){ ins >> gloss; }
-		//blur
 		else if( cmd == "blur" ){ ins >> blur; }
-		// texture maps
+		////
+
+		// Texture Maps ////
 		else if( cmd == "texture" ){
 
 			////
@@ -164,18 +276,21 @@ void material::read( std::istream& ins ){
 				// close that shit
 				texIn.close();
 			}
-			//else
-			//	std::cerr << "[ texPath[0] == \\0 ]" << std::endl;
 		}
 	}
 
-	// turn shading on/off depending on if the proper
-	//  input values are provided.
+	//  turn features on depending on if the proper	 //
+	//   input values are provided.					 //
+	
+	// Use Phong Shading?
 	if( seen_ambient && seen_phong )
 		bShadingOn = true;
 
-	// determine if this material has the right properties
-	//  specified to be a dielectric
+	// Use Tone Shading for the diffuse component?
+	if( seen_b && seen_y && seen_alpha && seen_beta )
+		bToneShadingOn = true;
+
+	// Is this material Refractive?
 	if( seen_extinct && seen_refr_index )
 		bIsDielectric = true;
 }

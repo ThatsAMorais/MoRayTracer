@@ -64,15 +64,22 @@ class Scene{
 				hit_t& hit, double time, bool checkOne=false);
 
 		// CalcColAtPoint functions ////////////////
+		bool calcEdge(surface_t* surface, ray_t& ray, hit_t& hit);
+		
+		// copperplate engraving simulation - hatching lines
+		gmVector3 calcHatching(surface_t* surface, ray_t& ray, hit_t& hit, 
+				gmVector3 finalColor);
+
+		// texture mapping
 		gmVector3 calcTexColor(surface_t* surface, ray_t& ray, hit_t& hit);
 
+		// Phong
 		gmVector3 calcPhongColor(material* surfaceMat, ray_t& ray,
 				hit_t& hit, gmVector3 matColor, double time, 
 				gmVector3 eye);
 
 		gmVector3 calcReflectColor(material* surfaceMat, ray_t& ray,
-				hit_t& hit, gmVector3 phongColor, int recDepth,
-				int numRaysToCast, double time);
+				hit_t& hit, int recDepth, int numRaysToCast, double time);
 
 		gmVector3 calcRefractColor(material* surfaceMat, ray_t& ray,
 				hit_t& hit, gmVector3 currentCol, int recDepth,

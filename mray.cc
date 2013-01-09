@@ -33,7 +33,7 @@ bool testPixel = false;
 #define FRAME_TAG2 "end_frame"
 
 // the number of threads to create
-#define NUM_THREADS 8
+#define NUM_THREADS 6
 
 view_t view;       // Hold the view
 Scene scene;
@@ -169,6 +169,8 @@ void* writeImage(void* threadArg){
 
 			// increment the local index
 			colorToWrite++;
+
+			//cerr << colorToWrite << " || ";
 
 			// unlock access
 			pthread_mutex_unlock(&g_tMutex);
@@ -392,6 +394,7 @@ int main( int argc, char* argv[] )
 	pthread_t imageWriter;
 	int iCreateWriterReturn = pthread_create(&imageWriter, NULL, writeImage, 
 			(void*)(totalPixels));
+
 
 	if(iCreateWriterReturn == EAGAIN){
 		cout << "The system lacks the resources to create the imageWriter thread" << endl;

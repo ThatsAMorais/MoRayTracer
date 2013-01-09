@@ -10,6 +10,7 @@
 #include "surfaces.h"
 #include "functions.h"
 #include <gmMat4.h>
+//#include <math.h>
 
 using namespace std;
 
@@ -178,7 +179,9 @@ surface_t* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hi
 	{
 
 		/* If ray intersects this object { */
-		if((*surfaceIter)->intersect(ray, t0, t1, hit, time)){
+		surface_t* hitObject = (*surfaceIter)->intersect(ray, t0, t1, hit, time);
+
+		if( hitObject != NULL ){
 
 			//cerr << "we got a hit" << endl;
 
@@ -186,16 +189,16 @@ surface_t* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hi
 			// for checking a single intersection
 			//  when you don't need the closest t
 			if(checkOne){
-				return (*surfaceIter);//->getMaterial();
+				return hitObject;
 			}
 
 			t1 = hit.getT();
-			nearestSurface = (*surfaceIter);
+			nearestSurface = hitObject;
 		}
 	}
 
 	if( nearestSurface )
-		return nearestSurface;//->getMaterial();
+		return nearestSurface;
 
 	return NULL;
 }
@@ -285,7 +288,7 @@ gmVector3 Scene::calcTexColor(surface_t* surface, ray_t& ray, hit_t& hit){
 	return matColor;
 }
 
-gmVector3 Scene::calcPhongColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
+gmVector3 Scene::calcPhongColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 		gmVector3 matColor, double time, gmVector3 eye){
 
 	/////////////
@@ -358,23 +361,54 @@ gmVector3 Scene::calcPhongColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 			/////////////
 			// DIFFUSE //
 			/////////////
-						
-			// I used some temps to separate 
-			//  the mutliplying for cleanliness
-			gmVector3 diffuse,
-					  diff1;	//temp
-			double diff2;		//temp
+			
+			// the diffuse component
+			gmVector3 diffuse = gmVector3( 0.0, 0.0, 0.0 );
 
-			diff1[0] = matColor[0] * lightCol[0];
-			diff1[1] = matColor[1] * lightCol[1];
-			diff1[2] = matColor[2] * lightCol[2];
+			// Apply tone shading to the diffuse 
+			//  if this material uses it.
+			if( surfaceMat->hasToneShadingOn() ){
 
-			diff2 = dot(normal, l);
+				double b = surfaceMat->getToneParam_b(),
+					   y = surfaceMat->getToneParam_y(),
+					   alpha = surfaceMat->getToneParam_alpha(),
+					   beta = surfaceMat->getToneParam_beta();
 
-			// calc the complete diffuse term
-			diffuse[0] = diff1[0] * max( (double)0, diff2 );
-			diffuse[1] = diff1[1] * max( (double)0, diff2 );
-			diffuse[2] = diff1[2] * max( (double)0, diff2 );
+				// calculate the tone shading components
+				gmVector3 kBlue = gmVector3( 0.0, 0.0, b ),
+						  kYellow = gmVector3( y, y, 0.0 );
+
+				gmVector3 kCool = gmVector3( kBlue[0] + matColor[0]*alpha,
+						kBlue[1] + matColor[1]*alpha,
+						kBlue[2] + matColor[2]*alpha );
+
+				gmVector3 kWarm = gmVector3( kYellow[0] + matColor[0]*beta,
+						kYellow[1] + matColor[1]*beta,
+						kYellow[2] + matColor[2]*beta );
+
+				double LdotN = dot( l, normal );
+				double temp = ( 1+LdotN ) / 2;
+
+				diffuse = ( kWarm * temp ) + ( kCool * (1-temp) );
+			}
+			// Otherwise, use the regular phong diffuse.
+			else{
+				// I used some temps to separate 
+				//  the mutliplying for cleanliness
+				gmVector3 diff1;	//temp
+				double diff2;		//temp
+
+				diff1[0] = matColor[0] * lightCol[0];
+				diff1[1] = matColor[1] * lightCol[1];
+				diff1[2] = matColor[2] * lightCol[2];
+
+				diff2 = dot(normal, l);
+
+				// calc the complete diffuse term
+				diffuse[0] = diff1[0] * max( (double)0, diff2 );
+				diffuse[1] = diff1[1] * max( (double)0, diff2 );
+				diffuse[2] = diff1[2] * max( (double)0, diff2 );
+			}
 
 			//////////////
 			// SPECULAR //
@@ -414,7 +448,7 @@ gmVector3 Scene::calcPhongColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 
 
 gmVector3 Scene::calcReflectColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
-		gmVector3 phongColor, int recDepth, int numRaysToCast, double time){
+		int recDepth, int numRaysToCast, double time){
 
 
 	gmVector3 avgReflectCol,
@@ -520,13 +554,7 @@ gmVector3 Scene::calcReflectColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 
 	avgReflectCol = avgReflectCol/max( 1 , (numRaysToCast - rayModifier) );
 	
-	gmVector3 reflectCol;
-	reflectCol[0] = phongColor[0] + ( ( 1-phongColor[0] )*avgReflectCol[0]*surfaceMat->getReflect()[0] );
-	reflectCol[1] = phongColor[1] + ( ( 1-phongColor[1] )*avgReflectCol[1]*surfaceMat->getReflect()[1] );
-	reflectCol[2] = phongColor[2] + ( ( 1-phongColor[2] )*avgReflectCol[2]*surfaceMat->getReflect()[2] );
-
-	return reflectCol;
-
+	return avgReflectCol;
 }
 
 
@@ -557,7 +585,7 @@ bool Scene::refractRay(gmVector3 d, gmVector3 n, double nIndex, double ntIndex,
 
 
 gmVector3 Scene::calcRefractColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
-		gmVector3 currentCol, int recDepth, int numRaysToCast, double time){
+		gmVector3 reflectCol, int recDepth, int numRaysToCast, double time){
 
 	ray_t tRay;					// the transmitted ray
 	gmVector3 transmitCol;		// the color returned by the transmitted ray
@@ -619,9 +647,9 @@ gmVector3 Scene::calcRefractColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 		else{
 			// total internal reflection //
 			// attenuate the pre-established finalColor
-			transmitCol[0] = kr*currentCol[0];
-			transmitCol[1] = kg*currentCol[1];
-			transmitCol[2] = kb*currentCol[2];
+			transmitCol[0] = kr*reflectCol[0];
+			transmitCol[1] = kg*reflectCol[1];
+			transmitCol[2] = kb*reflectCol[2];
 			
 			//return this color, at this point
 			return transmitCol;
@@ -689,9 +717,6 @@ gmVector3 Scene::calcRefractColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 			double vCoeff = -(blurIndex/2) + (yRand*blurIndex);
 
 			tPrime = t + u*uCoeff + v*vCoeff;
-			//tPrime.normalize();
-
-			//tRay.set_dir(tPrime);
 		}
 		//else //tRay.dir is already set properly
 
@@ -714,12 +739,12 @@ gmVector3 Scene::calcRefractColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 		// this 'if' makes it so that the bg color is not reflected
 		//  by the reflected surfaces in the scene.
 		//if( transmitCol == scene.getBGColor() )
-		//	transmitCol = currentCol;
+		//	transmitCol = reflectCol;
 
 		// actually attenuating the ray color produced by all of the above code
-		refractCol[0] = kr * ( (R * currentCol[0]) + ((1 - R) * transmitCol[0]));
-		refractCol[1] = kg * ( (R * currentCol[1]) + ((1 - R) * transmitCol[1]));
-		refractCol[2] = kb * ( (R * currentCol[2]) + ((1 - R) * transmitCol[2]));
+		refractCol[0] = kr * ( (R * reflectCol[0]) + ((1 - R) * transmitCol[0]));
+		refractCol[1] = kg * ( (R * reflectCol[1]) + ((1 - R) * transmitCol[1]));
+		refractCol[2] = kb * ( (R * reflectCol[2]) + ((1 - R) * transmitCol[2]));
 
 		avgRefractCol += refractCol;
 	}
@@ -727,6 +752,182 @@ gmVector3 Scene::calcRefractColor(material* surfaceMat, ray_t& ray, hit_t& hit,
 	return avgRefractCol/numRaysToCast;
 }
 
+bool Scene::calcEdge( surface_t* surface, ray_t& ray, hit_t& hit ){
+
+	// get the edge thickness
+	material* surfaceMat = surface->getMaterial();
+	double e = surfaceMat->getEdgeThickness();
+
+	if( ! strcmp( surface->name(), "sphere" ) ){
+		// determine if the angle between the normal at the
+		//  hit point of the surface and the eye direction
+		//  is [ -e, e ]
+
+		// calc the dot product of the eye and surface normal at hit.t
+		double EdotN = dot( ray.get_dir(), hit.getNormal() );
+	
+		// if the dot product is within the threshold
+		//  of the edge thickness, ...
+		if( (EdotN > -e) && (EdotN <= e) ){
+			// ... return the edge color.
+			return true;
+		}
+		else
+			return false;
+	}
+	/*else if( ! strcmp( surface->name(), "polygon" ) ){
+		gmVector3 p = ray.get_p();
+		
+		plane dPlane = ((polygon*)surface)->getFace(hit.getHitFaceIndex());
+
+		// iterate over the vertices, 
+		//  until we determine an edge or
+		//  cannot check any more vertices.
+		for(int v=1; v <= dPlane.getNumVertices(); v++ ){
+
+			gmVector4 vert0,
+					  vert1;
+
+			if( v == dPlane.getNumVertices() ){
+				vert0 = dPlane.getVertex( 0 );
+				vert1 = dPlane.getVertex( v-1 );
+			}
+			else{
+				vert0 = dPlane.getVertex( v );
+				vert1 = dPlane.getVertex( v-1 );
+			}
+
+			gmVector3 v0 = FourToThree( &vert0 ),
+					  v1 = FourToThree( &vert1 );
+
+			gmVector3 edge = v1 - v0;
+
+			gmVector3 normal = hit.getNormal();		// get the normal of the surface hit
+
+			int u, v;
+			
+			// determine which axis plane to which to flatten the surface
+			if( ( gmAbs(edge[2]) > gmAbs(edge[0]) ) && 
+					( gmAbs(edge[2]) > gmAbs(edge[1]) ) )
+			{
+				u = 0;
+				v = 1;
+			}
+			else if( gmAbs(edge[1]) > gmAbs(edge[0]) ){
+				u = 0;
+				v = 2;
+			}
+			else{
+				u = 1;
+				v = 2;
+			}
+
+			// compute the coordinate on the line where the tangent extends to the point
+			double t = ( ( (p[u] - v0[u])*(v1[u] - v0[u]) ) + ( (p[v] - v0[v])*(v1[v] - v0[v]) ) );
+			t = t / ( v1 - v0 ).length();
+
+			double x_t = v0[u] + t * (v1[u] - v0[u]),
+				   y_t = v0[v] + t * (v1[v] - v0[v]);
+
+			// calculate the distance that p is from point (x,y) on the line
+			double distance = sqrt( (p[u] - x_t) + (p[v] - y_t) );
+
+			if( distance <= e )
+				return true;
+			else
+				return false;
+		}
+	}*/
+
+	return false;
+}
+
+// calculate the copperplate engraving hatching pattern(s)
+gmVector3 Scene::calcHatching(surface_t* surface, ray_t& ray, hit_t& hit,
+		gmVector3 finalColor){
+
+//
+// This is the formula from the Leister paper
+//  It was poorly explained.
+//  kappa = Union{0 to 1}( Union( c_0*b_0 , r*c_0 ) ,Union)( c_1*b_1 , r*c_0 ) ) 
+//  			+ Sum( d_0 * b_0, d_1 * b_1 ) + r * d_0
+//  			+ (h - hb) * hf
+////////////////////////////////////////////////////////////////////////////////
+
+	gmVector3 t = ray.get_p();
+	material* surfaceMat = surface->getMaterial();
+	hatch_set* hatches = surfaceMat->getHatches();
+
+	// data I've stored for readability
+	double a0 = hatches->get_a0(),
+		   c0 = hatches->get_c0(),
+		   d0 = hatches->get_d0(),
+		   l = fmod(hit.getT(), a0) / a0;
+
+	// intermed. calcs for kappa
+	double LtimesC0 = l * c0,
+		   h = (finalColor[0] + finalColor[1] + finalColor[2]) / 3.0,
+		   //h = 0.5,
+		   thickness = ( h - hatches->get_hb() ) * hatches->get_hf(),
+		   LtimesD0 = l * d0;
+	
+	// the outer union of the kappa calc
+	// 	I'll accumulate this over time
+	double unionPart = 0.0;
+	double theSum = 0.0;
+
+	// loop over the lamina, calculating the hatching
+	for( int h=0; h < hatches->numOfLamina(); h++ ){
+
+		// get the h-th lamina
+		lamina* lam = hatches->getLamina(h);
+
+		// get the lamina properties
+		double a = lam->_a,				// the offset between planes
+			   e1 = (*lam->_e)[0],		// e_i,1
+			   e2 = (*lam->_e)[1],		// e_i,2
+			   e3 = (*lam->_e)[2],		// e_i,3
+			   e4 = (*lam->_e)[3],		// e_i,4
+			   f = e1*t[0] + e2*t[1] + e3*t[2] + e4;	// the plane equation
+
+		// calculate b_i
+		double b;
+		if( f >= 0 )
+			b = fmod(f, a) / a;
+		else // f < 0
+			b = a - ( fmod(f, a) / a );
+
+		double innerUnion,
+			   DtimesB = lam->_d * b,
+			   CtimesB = lam->_c * b;
+
+		// add DtimesB to the sum ( for use in the Kappa calc )
+		theSum += DtimesB + thickness + LtimesD0;
+
+		if( LtimesC0 >= 0 )
+			innerUnion = max( CtimesB, LtimesC0 );
+		else
+			innerUnion = min( CtimesB, 1 - LtimesC0 );
+	
+		if( h > 0 ){
+			if( innerUnion >= 0 )
+				unionPart = max( unionPart , innerUnion );
+			else
+				unionPart = min( unionPart , 1 - innerUnion );
+		}
+		else
+			unionPart = innerUnion;
+	}
+
+	double kappa = unionPart + theSum;// + LtimesD0 + thickness;
+	
+	if( kappa >= 0.5 )
+		return gmVector3( 1, 1, 1 );
+	else{
+		//return gmVector3( 0, 0, 0 );
+		return surfaceMat->getEdgeColor();
+	}
+}
 
 gmVector3 Scene::calcPointColor(surface_t* surface, ray_t& ray, hit_t& hit, 
 		gmVector3 eye, int recDepth, double time){
@@ -736,20 +937,47 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t& ray, hit_t& hit,
  
 	// this is the structure that will be ultimately returned
 	gmVector3 finalColor = gmVector3(.5,.5,.5);
+
+	///////////////
+	// Edge Drawing 
+	////////////////
+	
+	// if this object has edges, ...
+	if( surfaceMat->hasEdges()  ){
+		if( calcEdge( surface, ray, hit ) ){
+			return surfaceMat->getEdgeColor();
+		}
+	}
+	
+	/////////////
+	// Tex Mapping
+	///////////////
+
+	gmVector3 matColor = gmVector3();
 	// if the material has a texture map,
 	if( surfaceMat->isTextureMapped() ){
 		// get the color from the texture map
-		finalColor = calcTexColor( surface, ray, hit );
+		matColor = calcTexColor( surface, ray, hit );
 	}
 	else{
-		finalColor  = surfaceMat->getColor();
+		matColor  = surfaceMat->getColor();
 	}
 
-	// calculate the phong color
-	if(surfaceMat->hasShadingOn())
+	// UPDATE the final color
+	finalColor = matColor;
+
+	//////////////
+	// Phong Shading
+	/////////////////
+
+	if( surfaceMat->hasShadingOn() ){
+		// calculate the phong color
 		finalColor = calcPhongColor(surfaceMat, ray, hit, finalColor, time, eye);
-	else
+	}
+	else{
+		// return the mat color
 		return finalColor;
+	}
 
 	// if the recursion is shallow enough, 
 	//  enable super-sampling of the reflection ray.
@@ -761,25 +989,46 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t& ray, hit_t& hit,
 	// increment the recursion depth
 	recDepth++;
 
-	//////////////
+	////////////
 	// Reflection
-	///////////////
+	//////////////
 
+	gmVector3 reflectColor = gmVector3();
 	if( surfaceMat->isReflective() && recDepth < 10 ){
 
-		finalColor += calcReflectColor(surfaceMat, ray, hit, finalColor, 
+		reflectColor = calcReflectColor(surfaceMat, ray, hit, 
 				recDepth, numRaysToCast, time);
+
+		finalColor[0] = finalColor[0] + ( ( 1-finalColor[0] )*reflectColor[0]*surfaceMat->getReflect()[0] );
+		finalColor[1] = finalColor[1] + ( ( 1-finalColor[1] )*reflectColor[1]*surfaceMat->getReflect()[1] );
+		finalColor[2] = finalColor[2] + ( ( 1-finalColor[2] )*reflectColor[2]*surfaceMat->getReflect()[2] );
 	}
 
-	//////////////
+	////////////
 	// Refraction
-	///////////////
+	//////////////
 
+	gmVector3 refractColor = gmVector3();
 	// if this surface has refractive components (is dielectric)
 	if( surfaceMat->isDielectric() && recDepth < 10 ){
 
-		finalColor = calcRefractColor(surfaceMat, ray, hit, finalColor, 
+		refractColor = calcRefractColor(surfaceMat, ray, hit, reflectColor, 
 				recDepth, numRaysToCast, time);
+
+		gmVector3 refrExtinct = surfaceMat->getRefractExtinction();
+
+		finalColor[0] = finalColor[0] + (( 1-finalColor[0])*refractColor[0]);
+		finalColor[1] = finalColor[1] + (( 1-finalColor[1])*refractColor[1]);
+		finalColor[2] = finalColor[2] + (( 1-finalColor[2])*refractColor[2]);
+		//
+		//finalColor = refractColor;
+	}
+	
+	//////////////
+	// Copperplate Engraved Hatching
+	/////////////////////////////////
+	if( surfaceMat->hasHatches() ){
+		return calcHatching( surface, ray, hit, finalColor );
 	}
 
 	return finalColor;

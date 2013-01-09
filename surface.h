@@ -43,7 +43,7 @@ public:
   //           multiple copies of the same command, the values given by the last
   //           command instance take effect.
 
-  virtual bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time);
+  virtual surface_t* intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time);
   // requires: length( ray.dir ) != 0, t0 > 0, t1 > 0, t1 > t0
   //  ensures: IFF ray strikes this surface, THEN 
   //           this->hit( ray, t0, t1, hit ) == true, AND

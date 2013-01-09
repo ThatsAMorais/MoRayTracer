@@ -32,7 +32,7 @@ begin_frame
         phong 7
         reflectivity 1 1 1
 		refract_extinct 1.5 1.5 1.5
-		refract_index 2.417
+		refract_index 1.33
       end_material
     end_sphere
 
@@ -44,7 +44,8 @@ begin_frame
         color 1 .5 .5
         ambient .3 .4 .5
         phong 7
-        reflectivity 1 1 1
+        reflectivity .8 .8 .8
+		gloss 0.3
       end_material
     end_sphere
 
@@ -59,8 +60,9 @@ begin_frame
         phong 8
         reflectivity .8 .8 .8
 		#gloss .3
-		refract_extinct 1.5 1.5 1.5
-		refract_index 1.44
+		blur 0.3
+		refract_extinct 1.1 1.1 1.1
+		refract_index 1.0
 	  end_material
     end_sphere
 
@@ -80,7 +82,7 @@ begin_frame
 	# the sun
     begin_sphere
       position -95 .5 -490
-      radius 100.7
+      radius 150
 	  time_xform	1 0 0 5
 	  				0 2 0 -.85
 					0 0 2 -10
@@ -119,9 +121,10 @@ begin_frame
         ambient .3 .4 .5
         color 0.0 0.0 0.0
         phong 5
-		#reflectivity 1 1 1
-		refract_extinct 1.1 1.0 1.0
-		refract_index 1.0
+		reflectivity .7 .7 .7
+		refract_extinct 1.2 1.2 1.2
+		#refract_index 1.0
+		refract_index 1.33
 		#gloss 0.2
       end_material
     end_poly
@@ -138,20 +141,20 @@ begin_frame
       vertex -1 -1  1 # 7
       poly 0 1 2 3
       poly 4 5 1 0
-      poly 7 6 5 4
+      #poly 7 6 5 4
       poly 3 2 6 7
       poly 0 3 7 4
       poly 1 5 6 2
-      transform  38.637 0 10.3528 0
-	  			 0 1 0 0.5
-				 -10.3528 0 38.637 0
+      transform  38.637 0 10.3528 -4.5
+	  			 0 		1 	0 	   0.5
+				 -10.3528 0 38.637 4.5
 				 0 	0 	0 	1 
 	  time_xform 1 0 0 0
-			 	 0 1 0 -0.5
+			 	 0 1 0 -0.25
 				 0 0 1 0
 				 0 0 0 1
 	  begin_material
-        ambient .3 .4 .5
+        ambient .5 .6 .2
         color .5 .65 .25
         phong 30
 		#reflectivity .1 .1 .1
@@ -171,17 +174,18 @@ begin_frame
 	#eye    0 0 5   # assign2_eye_0-0-5
 	#eye    2 3 3
     vwidth 1
+	aspect 1.0
     #aspect 1.6		# 16:10
+	#aspect 1.778	# 16:9
+	#aspect 1.333	# 4:3
     #xres	1280
-	aspect 1.333	# 4:3
-	xres	1600
-	#aspect 1.0		# 1:1
-	#xres	200
-	focal  2
+	#xres	1600
+	xres	400
+    focal  2
     focal  3
 	focal  1
     up     0 1 0
-	n	   5	
+	n	   4	
   end_view
 
 end_frame

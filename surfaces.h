@@ -32,12 +32,14 @@ class sphere : public surface_t{
 		char* name() { return "sphere"; }
 		// Over-ridden virtual funcs
 		void read( std::istream& ins );
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
+		surface_t* intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
 		void print( std::ostream& os );
 
 		double getRadius( void ){ return sphereRadius; }
 		double getRadiusSquared( void ){ return sphereRadiusSqrd; }
+
 		gmVector3 getCenter( void ){ return sphereCenter; }
+	
 	protected:
 		// mathematical components
 		double sphereRadius,
@@ -64,17 +66,18 @@ class plane{
 		vertexPtrList* getVertices( void ){ return &vertices; }
 
 		void addVertex( gmVector4* newVertex ){ vertices.push_back(newVertex); }
+		void addIndex( int newIndex ){ vertexIndices.push_back(newIndex); }
 		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, bool doTransform, gmMatrix4 T );
 
 		gmVector4 getVertex(int index){ return *(vertices[index]); }
+		vector<int> getVertexIndices( void ){ return vertexIndices; }
 		int getNumVertices(){ return vertices.size(); }
 	private:
 		gmVector3 normal;
 		vertexPtrList vertices;
+		vector<int> vertexIndices;
 };
 ////////////////////////////////////////////////////////////////////////
-
-
 
 // list type
 typedef vector<plane> planeList;
@@ -85,6 +88,8 @@ class polygon : public surface_t{
 	public:
 		// Constructor/Destructor
 		polygon();
+		//polygon( vertexPtrList transformedVerts, planeList planes );
+		polygon( vertexPtrList transformedVerts );
 		~polygon();
 
 		char* begin_tag(void){ return "begin_poly"; }
@@ -92,18 +97,25 @@ class polygon : public surface_t{
 
 		// Other necessities from the base class
 		char* name() { return "polygon"; }
+
 		// Over-ridden virtual funcs
 		void read( std::istream& ins );
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
+		surface_t* intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
 		void print( std::ostream& os );
+
 		// returns the vertex list
 		vertexPtrList getVertices( void ){ return vertices; }
+		int getNumVerts( void ){ return vertices.size(); }
 		plane getFace( int faceIndex ){ return polyList[faceIndex]; }
+		int getNumFaces( void ){ return polyList.size(); }
+
+		polygon* getEdgePoly( void ){ return edgePoly; }
 
 	protected:
 		vertexPtrList vertices;		// type vector< gmVector4 * >
 		planeList polyList;			// list of faces
 		gmMatrix4 transformMatrix;	// the transformation matrix
+		polygon* edgePoly; 
 		
 		// surface's material 
 		//material mat			(inherited from surface_t)
