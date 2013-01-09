@@ -15,8 +15,13 @@ class hit_t
 	public:
 		double getT( void ){ return t; }
 		void setT( double t_val ){ t = t_val; }
+
+		gmVector3 getNormal( void ){ return normal; }
+		void setNormal( gmVector3 norm ){ normal = norm; }
+
 	private:
-		double t;     // Parametric ray distance where hit occurs
+		double t;			// Parametric ray distance where hit occurs
+		gmVector3 normal;	// the normal of the surface hit
 };
 
 #endif

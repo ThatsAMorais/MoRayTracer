@@ -16,7 +16,6 @@ void material::read( std::istream& ins ){
 	bool   seen_color = false;     // Must see each command
 	bool   seen_ambient = false;
 	bool   seen_phong = false;
-	bool   seen_reflectivity = false;
 	
 	// Loop and read until we reach the end of the view construct
 	while( !ins.eof() && !seen_end_tag ){
@@ -49,13 +48,15 @@ void material::read( std::istream& ins ){
 		}
 		else if( cmd == "reflectivity" ){	// reflectivity
 			ins >> reflectivity;
-			seen_reflectivity = true;
+		}
+		else if( cmd == "refractivity" ){	// refractivity
+			ins >> refractivity;
 		}
 	}
 
 	// turn shading on/off depending on if the proper
 	//  input values are provided.
-	if( !( seen_ambient && seen_phong && seen_reflectivity ) )
+	if( !( seen_ambient && seen_phong ) )
 		bShadingOn = false;
 	else
 		bShadingOn = true;

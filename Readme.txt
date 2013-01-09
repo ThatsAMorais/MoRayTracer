@@ -9,10 +9,11 @@ Execution Instructions:
 
 ...and that should do it.
 
-I borrowed Don Johnson's ray files and simple_sphere.ray(part1.ray) to test my raytracer.
-	- part1.ray (simple_sphere.ray)
-	- part2.ray
-	- part3.ray
+Ray/Image files:
+	- assignment_2.ray / assignment_2.png
+	- pyramid.ray / pyramid.png
+	- mirror.ray / daves_mirrors.png
+	- triforce.ray ( incomplete : no image rendered )
 
 The included images are from these three files and are named respectively.
 //////////////////////////////////

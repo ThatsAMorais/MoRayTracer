@@ -55,15 +55,15 @@ class Scene{
 		gmVector3 getBGColor( void ){ return background; }
 
 		//
-		surface_t* checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
+		material* checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
 				bool checkOne=false);
 
 		//
-		bool checkReflections(gmVector3& color, ray_t lastRay, ray_t thisRay, 
+		bool checkReflectAndRefract(gmVector3& color, ray_t& thisRay, 
 				int recDepth, gmVector3 eye);
 
 		//
-		gmVector3 calcPointColor(surface_t* surface, ray_t ray, hit_t hit, 
+		gmVector3 calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
 				gmVector3 eye);
 
 		//
@@ -75,6 +75,7 @@ class Scene{
 		list<Light*> lightsInScene;
 
 		gmVector3 background;
+		
 };
 
 

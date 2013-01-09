@@ -51,11 +51,16 @@ public:
   virtual void print( std::ostream& os );
   //  ensures: A representation of the surface is printed to os.
   
+  virtual gmVector3 getNormal( gmVector3 rt );
+  // subclasses should define their own procedure for
+  //  calculating the normal.  This will give us the
+  //  normal of any surface in a general context
+
+  material* getMaterial( void ){ return &mat; }
   // get the surfaces' material
-  material* getMaterial( void ){ return mat; }
-  
+ 
 protected:
-  material* mat;
+  material mat;
 };
 
 #endif

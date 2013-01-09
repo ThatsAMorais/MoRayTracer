@@ -5,8 +5,10 @@
 // created: 1-24-2007
 // *************************************************************************
 
+//#include "functions.h"
 #include "scene.h"
 #include "surfaces.h"
+#include "functions.h"
 
 using namespace std;
 
@@ -123,12 +125,23 @@ void Scene::read( istream& ins ){
 			surfacesInScene.push_back(surface);
 
 			seen_a_surface = true;
+			surface = NULL;
+		}
+		else if( cmd == "begin_poly" ){
+			surface = new polygon();
+
+			// parse the polygon
+			surface->read( ins );
+
+			// push the new poly into the list
+			surfacesInScene.push_back(surface);
+
+			seen_a_surface = true;
+			surface = NULL;
 		}
 		else if( cmd == "begin_light" ){
 			light = new Light();
-
 			light->read( ins );
-
 			lightsInScene.push_back(light);
 		}
 	}
@@ -143,9 +156,12 @@ void Scene::read( istream& ins ){
 }
 /////////////////////////////////////////////////
 
-surface_t* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
+material* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
 		bool checkOne)
 {	
+	//if(!checkOne)
+		//cerr << "checking a surface" << endl;
+
 	list<surface_t*>::iterator surfaceIter;
 	surface_t* nearestSurface = NULL;
 
@@ -160,43 +176,35 @@ surface_t* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hi
 			// ---Optimization---
 			// for checking a single intersection
 			//  when you don't need the closest t
-			if(checkOne)
-				return (*surfaceIter);
-
-			//cerr << "Intersection found" << endl;
-			if(!nearestSurface)
-				nearestSurface = (*surfaceIter);
-
-			// If t of intersection is less than t1
-			if(hit.getT() < t1){
-
-				// set nearest t to t of the intersection
-				t1 = hit.getT();
-
-				// set nearest object to this surface
-				nearestSurface = (*surfaceIter);
+			if(checkOne){
+				return (*surfaceIter)->getMaterial();
 			}
+
+			//if(hit.getT() < t1){
+				t1 = hit.getT();
+				nearestSurface = (*surfaceIter);
+			//}
 		}
-		else
-			hit.setT(t1);
+		//else
+		//	hit.setT(std::numeric_limits<double>::infinity());
 	}
 
 	if( nearestSurface )
-		return nearestSurface;
+		return nearestSurface->getMaterial();
 
 	return NULL;
 }
 
-bool Scene::checkReflections(gmVector3& color, ray_t lastRay, ray_t thisRay, int recDepth, gmVector3 eye){
-	
+bool Scene::checkReflectAndRefract(gmVector3& color, ray_t& thisRay, int recDepth, gmVector3 eye){
+
 	hit_t hit;
-	surface_t* hitSurface;
+	material* hitSurfaceMat;
 	gmVector3 hitSurfaceCol,
 			  tempCol;
 
 	// determine if the reflection ray hits another suface.. //
 	//   if it does, calculate reflection ray and recurse.   //
-	if( (hitSurface =checkIntersections(
+	if( (hitSurfaceMat =checkIntersections(
 				thisRay, 
 				gmEPSILON,
 				std::numeric_limits<double>::infinity(), 
@@ -204,25 +212,25 @@ bool Scene::checkReflections(gmVector3& color, ray_t lastRay, ray_t thisRay, int
 	{
 		bool reflResult = false;
 
-		if(hitSurface->getMaterial()->getReflectivity().length() != 0 || recDepth <= 5){
+		ray_t nextRay;	
+		if(hitSurfaceMat->getReflect().length() != 0 || recDepth <= 10){
+			recDepth++;
 
 			// parameters used to calculate next ray from previous ray
-			gmVector3 p = lastRay.get_origin() + hit.getT()*lastRay.get_dir_norm(),
-					  normal = p - ((sphere*)hitSurface)->getCenter(),
-					  dirNorm = lastRay.get_dir_norm();
+			gmVector3 p = thisRay.get_origin() + hit.getT()*thisRay.get_dir_norm(),
+					  normal = hit.getNormal(),
+					  dirNorm = thisRay.get_dir_norm();
 
 			// calculate the next ray direction
 			gmVector3 r = dirNorm - 2 * ( dot(dirNorm, normal) ) * normal;
 		
-			// declare/initialize the next ray to be cast
-			ray_t nextRay;
+			// initialize the next ray to be cast
 			nextRay.set_origin(p);
 			nextRay.set_dir(r);
 
 			// recurse to determine next reflection
-			reflResult = checkReflections(
+			reflResult = checkReflectAndRefract(
 					tempCol,
-					lastRay,
 					nextRay,
 					recDepth,
 					eye);
@@ -233,8 +241,10 @@ bool Scene::checkReflections(gmVector3& color, ray_t lastRay, ray_t thisRay, int
 		//c2 = calc_color(p2)
 
 		// convenience vars for storing the colors
-		gmVector3 reflectivity = hitSurface->getMaterial()->getReflectivity();		
-		hitSurfaceCol = calcPointColor(hitSurface, thisRay, hit, eye);
+		gmVector3 reflectivity = hitSurfaceMat->getReflect();
+		//
+		hitSurfaceCol = calcPointColor(hitSurfaceMat, nextRay, hit, eye);
+		//
 		gmVector3 tempColor;
 
 
@@ -255,20 +265,22 @@ bool Scene::checkReflections(gmVector3& color, ray_t lastRay, ray_t thisRay, int
 	}
 	else
 		return false;
+
+	
 }
 
-gmVector3 Scene::calcPointColor(surface_t* surface, ray_t ray, hit_t hit, gmVector3 eye){
-	
+gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gmVector3 eye){
+
 	// the mat of the surface that the ray intersected
-	material* surfaceMat = surface->getMaterial();
-	gmVector3 matColor = surface->getMaterial()->getColor();
+	
+	gmVector3 matColor = surfaceMat->getColor();
 
 	/////////////
 	// AMBIENT //
 	/////////////
 	
-	if(!surface->getMaterial()->hasShadingOn())
-		return surface->getMaterial()->getColor();
+	if(!surfaceMat->hasShadingOn())
+		return surfaceMat->getColor();
 
 	// ambient term
 	gmVector3 ambient;
@@ -286,13 +298,10 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t ray, hit_t hit, gmVect
 	// light list iterator ...
 	list<Light*>::iterator lightIter;
 
-	// p => from the ray equation
-	gmVector3 rt = ray.get_origin()+hit.getT()*ray.get_dir_norm();
 
-	// this is for SPHERE NORMALS ONLY
-	gmVector3 normal = rt - ((sphere*)surface)->getCenter();
-	// and normalize it
-	normal.normalize();	
+	// p => from the ray equation
+	gmVector3 rt = ray.get_p();
+	gmVector3 normal = hit.getNormal();
 
 	// ... used here.
 	for(lightIter = lightsInScene.begin();
@@ -300,7 +309,7 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t ray, hit_t hit, gmVect
 			lightIter++)
 	{
 		// Get the lights color(convenience)
-		gmVector3 lightCol = (*lightIter)->getColor();		
+		gmVector3 lightCol = (*lightIter)->getColor();
 
 		// get id of the light (directional vs. positional)
 		int id = (*lightIter)->getIdentity();
@@ -313,7 +322,7 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t ray, hit_t hit, gmVect
 			l = (*lightIter)->getVector();
 		else if( id == POS_LIGHT ){
 			l = (*lightIter)->getVector() - rt;
-			l = l / l.length();
+			l = l / l.length();					// this is somehow 0
 		}
 
 		// shoot a shadow ray and determine if the 
@@ -372,7 +381,7 @@ gmVector3 Scene::calcPointColor(surface_t* surface, ray_t ray, hit_t hit, gmVect
 			r = r - l;
 						
 			// A HARD LESSON WAS LEARNED HERE ON FEB 3. ///////////////
-			//  "I have to use the normals"
+			//  "I have to normalize"
 			specTemp = dot( eye.normalize(), r.normalize() );	
 			///////////////////////////////////////////////////////////
 			

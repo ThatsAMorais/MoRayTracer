@@ -15,8 +15,11 @@
 
 using namespace std;
 
+//#include "functions.h"
 #include "view.h"
 #include "scene.h"
+
+bool testPixel = false;
 
 // Indicate frame construct in input file
 #define FRAME_TAG1 "begin_frame"
@@ -79,8 +82,6 @@ int main( int argc, char* argv[] )
 		<< view.getNumYPixels() << endl;
 	cout << "255" << endl;
 
-	//cerr << "Done reading script" << endl;
-
     if( EchoInputLanguage ) {
 		cerr << "The view:\n" << view << endl;
     }
@@ -88,6 +89,12 @@ int main( int argc, char* argv[] )
 	/* Loop over the pixels */
 	for(unsigned y = 0; y < view.getNumYPixels(); y++){
 		for(unsigned x =0; x < view.getNumXPixels(); x++){
+
+			if(x == 47 && y == 73)		
+				testPixel = true;
+			else
+				testPixel = false;
+
 			// declare the ray sent into the scene, 
 			//  nearest t, and nearest surface.
 			ray_t thisRay;
@@ -111,66 +118,54 @@ int main( int argc, char* argv[] )
 			thisRay.set_origin(view.getEye());
 			thisRay.set_dir(ur*view.getVectorU() + vr*view.getVectorV() + wr*view.getVectorW());
 
-			// the closest surface(updated throughout scene traversal)
-			surface_t* nearestSurface = NULL;
+			// the closest surface mat
+			material* hitSurfaceMat = NULL;
+			//surface_t* nearestSurface = NULL;
 
-			//cerr << "calling scene.checkIntersections" << endl;
+			/* loop over the object list of the scene */
+			hitSurfaceMat = scene.checkIntersections(thisRay, t0, t1, hit);
+			//nearestSurface = scene.checkIntersections(thisRay, t0, t1, hit);
 
-			/* loop over the object list of the scene */			
-			nearestSurface = scene.checkIntersections(thisRay, t0, t1, hit);
-
-			if(nearestSurface == NULL){
+			if( hitSurfaceMat == NULL ){
 				cout << (int)(255 * scene.getBGColor()[0]) << " " 
 					<< (int)(255 * scene.getBGColor()[1]) << " "
 					<< (int)(255 * scene.getBGColor()[2]) << " ";
 			}
 			// let the fun begin!
 			else{
-
-				// p => from the ray equation
-				gmVector3 rt = thisRay.get_origin()+hit.getT()*thisRay.get_dir_norm();
-
-				// this is for SPHERE NORMALS ONLY
-				gmVector3 normal = rt - ((sphere*)nearestSurface)->getCenter();
-				// and normalize it
-				normal.normalize();
-
-				// calculate the phong lit color at this point
-				gmVector3 pointCol = scene.calcPointColor(
-						nearestSurface, 
-						thisRay,
-						hit,
-						view.getEye());
-
-				//			////////			  //
-				// Let the reflective party begin!//
-				// 			////////			  //
-
 				gmVector3 tempCol,	// this is what returns from the reflection recursion
-						  reflectivity = nearestSurface->getMaterial()->getReflectivity(),
+						  reflectivity = hitSurfaceMat->getReflect(),
+						  refractivity = hitSurfaceMat->getRefract(),
 						  dirNorm = thisRay.get_dir_norm(),
-						  r = dirNorm - 2 * ( dot(dirNorm, normal) ) * normal;
+						  r = dirNorm - 2 * ( dot(dirNorm, hit.getNormal()) ) * hit.getNormal();
 				
+				// the ray to be cast for reflection/refraction
 				ray_t reflRay;
-				reflRay.set_origin(rt);
-				reflRay.set_dir(r);
+				reflRay.set_origin( thisRay.get_p() );
+				reflRay.set_dir( r );
 
-				bool reflResult = scene.checkReflections(
-						tempCol,
-						thisRay,
-						reflRay,
-						0,
-						view.getEye());
+				//
+				gmVector3 finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
 
-				gmVector3 finalColor;
+				if( reflectivity.length() != 0 || refractivity.length() != 0 ){
+					
+					bool result = scene.checkReflectAndRefract( 
+							tempCol,
+							reflRay,
+							0,
+							view.getEye() );
 
-				if(reflResult){
-					finalColor[0] = pointCol[0]+((1-pointCol[0])*tempCol[0]*reflectivity[0]);
-					finalColor[1] = pointCol[1]+((1-pointCol[1])*tempCol[1]*reflectivity[1]);
-					finalColor[2] = pointCol[2]+((1-pointCol[2])*tempCol[2]*reflectivity[2]);
+					if(result){
+						finalColor[0] = finalColor[0]+((1-finalColor[0])*tempCol[0]*reflectivity[0]);
+						finalColor[1] = finalColor[1]+((1-finalColor[1])*tempCol[1]*reflectivity[1]);
+						finalColor[2] = finalColor[2]+((1-finalColor[2])*tempCol[2]*reflectivity[2]);
+					}
+					else
+						finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
+
 				}
 				else
-					finalColor = pointCol;
+					finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
 				
 				// clamp'em
 				finalColor.clamp(0.0, 1.0);
@@ -181,6 +176,7 @@ int main( int argc, char* argv[] )
 					<< " "
 					<< (int)( 255 * finalColor[2] ) 
 					<< " ";
+
 			}
 		}
 	}

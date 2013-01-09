@@ -1,0 +1,62 @@
+begin_frame
+
+  begin_scene
+    background .4 .4 .4
+
+    # directional light
+    begin_light
+      direction 0 1 0
+      color 1 1 1
+    end_light
+
+    # positional light
+    begin_light
+      position 10 -8 2
+      color 1 1 0.5
+    end_light
+
+    # a mirrored surface that the spheres are floating above
+    begin_poly
+      vertex  1  1  1 # 0
+      vertex  1  1 -1 # 1
+      vertex -1  1 -1 # 2
+      vertex -1  1  1 # 3
+      vertex  1 -1  1 # 4
+      vertex  1 -1 -1 # 5
+      vertex -1 -1 -1 # 6
+      vertex -1 -1  1 # 7
+ 	  poly 0 1 2 3			# the "top"
+      poly 4 5 1 0			# front right
+      poly 7 6 5 4			# bottom
+      poly 3 2 6 7			# back left
+      poly 0 3 7 4			# back right
+      poly 1 5 6 2			# front left
+      transform  2.828 0   2.828  0 
+                 0     0.5 0     -3 
+                -2.828 0   2.828  0 
+                 0     0   0      1 
+      begin_material
+        ambient .3 .4 .5
+        color 0 0 1
+        phong 15
+		reflectivity .7 .7 .7
+      end_material
+    end_poly
+
+  end_scene
+
+  begin_view
+    coi    0 0 0
+    eye    0 0 10
+	#eye    0 5 15  # assign2_eye_0-5-15
+	#eye    0 0 5   # assign2_eye_0-0-5
+    vwidth 1
+    aspect 1.0
+    xres   800
+    focal  2
+    focal  3
+    focal  1
+    up     0 1 0
+  end_view
+
+end_frame

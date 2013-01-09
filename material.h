@@ -24,15 +24,19 @@ class material{
 		gmVector3 getColor( void ){ return color; }
 		gmVector3 getAmbient( void ){ return ambient; }
 		int getPhongExponent( void ){ return phongExp; }
-		gmVector3 getReflectivity( void ){ return reflectivity; }
-		bool hasShadingOn( void ){ return bShadingOn; }
+		gmVector3 getReflect( void ){ return reflectivity; }
+		gmVector3 getRefract( void ){ return refractivity; }
 		
+		bool hasShadingOn( void ){ return bShadingOn; }
+	
 	private:
 		// the color vector
 		gmVector3 color;		// the color of some surface
 		gmVector3 ambient;  	// ambient light component
 		int phongExp;			// k_spec
 		gmVector3 reflectivity;	// self-explanatory
+		gmVector3 refractivity; // dido
+		
 		bool bShadingOn;
 };
 

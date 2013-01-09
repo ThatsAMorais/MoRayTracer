@@ -8,7 +8,7 @@
 
 MAIN	=	mray.exe
 
-SRCS    =	mray.cc view.cc surface.cc surfaces.cc scene.cc material.cc
+SRCS    =	mray.cc view.cc surface.cc surfaces.cc scene.cc material.cc functions.cc
 OBJS	=	$(SRCS:.cc=.o)
 
 ###############################################################################

@@ -46,5 +46,12 @@ bool surface_t::intersect( ray_t& ray, double t0, double t1, hit_t& hit )
 /*****************************************************************************/
 void surface_t::print( ostream& os )
 {
-    os << "surface_t::print";
+    //os << "surface_t::print";
+}
+/*****************************************************************************/
+gmVector3 surface_t::getNormal( gmVector3 rt )
+{
+	gmVector3 normal;
+
+    return normal;
 }
