@@ -52,15 +52,20 @@ begin_frame
       poly 4 3 2 1		# the bottom
       poly 4 3 0		# front left
       poly 3 2 0		# front right
-      transform 2.95442 0 -0.520945 0
+      transform 2.95442 0 -0.520945 1
 	  			0 3 0 0.5 
-				0.520945 0 2.95442 0 
+				0.520945 0 2.95442 -1 
 				0 0 0 1
+	  time_xform	1 0 0 -1
+	  				0 1 0 0
+					0 0 1 1
+					0 0 0 1
       begin_material
         ambient .3 .4 .5
-        color 0 0 0
-        phong 17
+        color .1 .1 .1
+        phong 5
 		reflectivity .9 .9 .9
+		gloss 0.2
       end_material
     end_poly
 
@@ -81,9 +86,13 @@ begin_frame
       poly 0 3 7 4
       poly 1 5 6 2
       transform  2.828 0   2.828  0 
-                 0     0.5 0     -3 
+                 0     0.5 0     -4 
                 -2.828 0   2.828  0 
-                 0     0   0      1 
+                 0     0   0      1
+	  time_xform	1 0 0 0 
+	  				0 3 0 5
+					0 0 1 0
+					0 0 0 1
       begin_material
         ambient .3 .4 .5
         color .5 .65 .25
@@ -102,7 +111,7 @@ begin_frame
 	#eye    0 0 5   # assign2_eye_0-0-5
     vwidth 1
     aspect 1.0
-    xres   800
+    xres   500
     focal  2
     focal  3
     focal  1

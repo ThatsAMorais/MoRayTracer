@@ -42,6 +42,7 @@ public:
   gmVector3 getVectorV( void ){ return v; }
   gmVector3 getVectorW( void ){ return w; }
   gmVector3 getEye( void ){ return eye; }
+  int getSamplingSize( void ){ return n; }
 
 private:
   // Parameters calculated from public items
@@ -58,6 +59,7 @@ private:
   unsigned  num_x_pixels;  // Num horizontal pixels
   double    focal_length;  // Distance from eye to near clipping plane
   gmVector3 up;            // Approximate viewport up vector
+  int n;				   // the sampling length
 
 };
 

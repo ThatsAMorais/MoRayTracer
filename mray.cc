@@ -18,7 +18,9 @@ using namespace std;
 //#include "functions.h"
 #include "view.h"
 #include "scene.h"
+#include "functions.h"
 
+// pixel isolating bool
 bool testPixel = false;
 
 // Indicate frame construct in input file
@@ -47,6 +49,7 @@ static void frame_read( istream& ins )
 		else if( cmd == scene.begin_tag() ) { scene.read(ins); }
 	}
 }
+
 /*****************************************************************************/
 int main( int argc, char* argv[] )
 {
@@ -86,98 +89,128 @@ int main( int argc, char* argv[] )
 		cerr << "The view:\n" << view << endl;
     }
 
+	unsigned numYPixels = view.getNumYPixels(),
+			 numXPixels = view.getNumXPixels();
+
+	int n = view.getSamplingSize();
+	int nSqrd = n*n;
+	double sampling_size = 1.0/n;
+	
+	// subdivide the view extents
+
+	// branch the threads
+
 	/* Loop over the pixels */
-	for(unsigned y = 0; y < view.getNumYPixels(); y++){
-		for(unsigned x =0; x < view.getNumXPixels(); x++){
+	for(unsigned pixelY = 0; pixelY < numYPixels; pixelY++){
 
-			if(x == 47 && y == 73)		
-				testPixel = true;
-			else
-				testPixel = false;
+		// if two backgrounds were specified, 
+		//  calculate the new BG color at this row
+		//if( scene.getHasTwoColors() )	
+		//	scene.calcNextBGColor( pixelY, numYPixels );
 
-			// declare the ray sent into the scene, 
-			//  nearest t, and nearest surface.
-			ray_t thisRay;
+		cerr << pixelY << "  ";
 
-			//the hit object
-			hit_t hit;
+		for(unsigned pixelX =0; pixelX < numXPixels; pixelX++){
 
-			// calc more parameters to satisfy the ray equation
-			double ru = view.getVPu() / view.getNumXPixels(),
-				   rv = view.getVPv() / view.getNumYPixels(),
-				   llu = -(double)0.5 * view.getVPu() + (double)0.5 * ru,
-				   llv = -(double)0.5 * view.getVPv() + (double)0.5 * rv, 
-				   ur = llu + x * ru,
-				   vr = llv + y * rv,
-				   wr = -view.getFocalLength();
+			//if(x == 47 && y == 73)
+			//	testPixel = true;
+			//else
+			//	testPixel = false;
 
-			double t0 = 0, 	// always 0 (or so it seems)
-				   t1 = std::numeric_limits<double>::infinity();  // the farthest point away
+			gmVector3 pixelColor;
+			bool permuteNumUsed[nSqrd];
 
-			// setup the ray
-			thisRay.set_origin(view.getEye());
-			thisRay.set_dir(ur*view.getVectorU() + vr*view.getVectorV() + wr*view.getVectorW());
+			for( int b=0; b<(nSqrd); b++ )
+				permuteNumUsed[b] = false;
 
-			// the closest surface mat
-			material* hitSurfaceMat = NULL;
-			//surface_t* nearestSurface = NULL;
 
-			/* loop over the object list of the scene */
-			hitSurfaceMat = scene.checkIntersections(thisRay, t0, t1, hit);
-			//nearestSurface = scene.checkIntersections(thisRay, t0, t1, hit);
-
-			if( hitSurfaceMat == NULL ){
-				cout << (int)(255 * scene.getBGColor()[0]) << " " 
-					<< (int)(255 * scene.getBGColor()[1]) << " "
-					<< (int)(255 * scene.getBGColor()[2]) << " ";
-			}
-			// let the fun begin!
-			else{
-				gmVector3 tempCol,	// this is what returns from the reflection recursion
-						  reflectivity = hitSurfaceMat->getReflect(),
-						  refractivity = hitSurfaceMat->getRefract(),
-						  dirNorm = thisRay.get_dir_norm(),
-						  r = dirNorm - 2 * ( dot(dirNorm, hit.getNormal()) ) * hit.getNormal();
-				
-				// the ray to be cast for reflection/refraction
-				ray_t reflRay;
-				reflRay.set_origin( thisRay.get_p() );
-				reflRay.set_dir( r );
-
-				//
-				gmVector3 finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
-
-				if( reflectivity.length() != 0 || refractivity.length() != 0 ){
+			for(double u = 0; u < 1; u += sampling_size ){
+				for(double v = 0; v < 1; v += sampling_size ){
 					
-					bool result = scene.checkReflectAndRefract( 
-							tempCol,
-							reflRay,
-							0,
-							view.getEye() );
+					double x = (double)pixelX + u + (randDouble() * sampling_size),
+						   y = (double)pixelY + v + (randDouble() * sampling_size);
 
-					if(result){
-						finalColor[0] = finalColor[0]+((1-finalColor[0])*tempCol[0]*reflectivity[0]);
-						finalColor[1] = finalColor[1]+((1-finalColor[1])*tempCol[1]*reflectivity[1]);
-						finalColor[2] = finalColor[2]+((1-finalColor[2])*tempCol[2]*reflectivity[2]);
+					// declare the ray sent into the scene, 
+					//  nearest t, and nearest surface.
+					ray_t thisRay;
+
+					//the hit object
+					hit_t hit;
+
+					// calc more parameters to satisfy the ray equation
+					double ru = view.getVPu() / view.getNumXPixels(),
+						   rv = view.getVPv() / view.getNumYPixels(),
+						   llu = -(double)0.5 * view.getVPu() + (double)0.5 * ru,
+						   llv = -(double)0.5 * view.getVPv() + (double)0.5 * rv, 
+						   ur = llu + x * ru,
+						   vr = llv + y * rv,
+						   wr = -view.getFocalLength();
+
+					double t0 = 0, 	// always 0 (or so it seems)
+						   t1 = std::numeric_limits<double>::infinity();  // the farthest point away
+
+					gmVector3 finalColor;
+
+					// setup the ray
+					thisRay.set_origin(view.getEye());
+					thisRay.set_dir(ur*view.getVectorU() + vr*view.getVectorV() + wr*view.getVectorW());
+
+					// the closest surface mat
+					material* hitSurfaceMat = NULL;
+
+					// randomly generate a time for this ray
+					int permNum=-1;
+					
+					do{
+						permNum = randInt(0, nSqrd);
+
+						if( !permuteNumUsed[permNum] ){
+							permuteNumUsed[permNum] = true;
+							break;
+						}
+					}while(1);
+
+					double time = (randDouble() + permNum) / (nSqrd);
+					/* loop over the object list of the scene */
+					hitSurfaceMat = scene.checkIntersections(thisRay, t0, t1, hit, time);
+
+					// if we didn't hit anything
+					if( hitSurfaceMat == NULL ){
+						finalColor = scene.getBGColor();
 					}
-					else
-						finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
+					// let the fun begin!
+					else{
+						gmVector3 tempCol,	// this is what returns from the reflection recursion
+								  dirNorm = thisRay.get_dir_norm(),
+								  r = dirNorm - 2 * ( dot(dirNorm, hit.getNormal()) ) * hit.getNormal();
+						
+						// the ray to be cast for reflection/refraction
+						ray_t reflRay;
+						reflRay.set_origin( thisRay.get_p() );
+						reflRay.set_dir( r );
 
+						//
+						finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye(), 
+								0, time);
+						
+						// clamp'em
+						finalColor.clamp(0.0, 1.0);
+					}
+
+					// add the color to the running total
+					pixelColor[0] += finalColor[0]/nSqrd;
+					pixelColor[1] += finalColor[1]/nSqrd;
+					pixelColor[2] += finalColor[2]/nSqrd;
 				}
-				else
-					finalColor = scene.calcPointColor(hitSurfaceMat, thisRay, hit, view.getEye());
-				
-				// clamp'em
-				finalColor.clamp(0.0, 1.0);
-
-				cout << (int)( 255 * finalColor[0] )
-					<< " "
-					<< (int)( 255 * finalColor[1] ) 
-					<< " "
-					<< (int)( 255 * finalColor[2] ) 
-					<< " ";
-
 			}
+			
+			// output the final color at this point
+			cout << (int)( 255 * pixelColor[0] )
+				<< " "
+				<< (int)( 255 * pixelColor[1] ) 
+				<< " "
+				<< (int)( 255 * pixelColor[2] ) 
+				<< " ";
 		}
 	}
 	

@@ -25,7 +25,7 @@ LIBS		= -lgm -lm
 # will cause inlined functions to actually be inlined.  This will cause a
 # substantial amount of acceleration, because the libgm library makes
 # substantial use of inlined functions.
-OPTIM		= -DNDEBUG -O2
+#OPTIM		= -DNDEBUG -O2
 # For a debug version, put this definition last.  "-Wall" prints copious,
 # lint-type error messages.  "-g" produces a symbol table suitable for a
 # debugger such as GDB.

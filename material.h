@@ -25,7 +25,9 @@ class material{
 		gmVector3 getAmbient( void ){ return ambient; }
 		int getPhongExponent( void ){ return phongExp; }
 		gmVector3 getReflect( void ){ return reflectivity; }
-		gmVector3 getRefract( void ){ return refractivity; }
+		gmVector3 getRefractExtinction( void ){ return refrExtinction; }
+		double getRefractIndex( void ){ return refrIndex; }
+		double getGloss( void ){ return gloss; }
 		
 		bool hasShadingOn( void ){ return bShadingOn; }
 	
@@ -35,9 +37,13 @@ class material{
 		gmVector3 ambient;  	// ambient light component
 		int phongExp;			// k_spec
 		gmVector3 reflectivity;	// self-explanatory
-		gmVector3 refractivity; // dido
+		double gloss;			// this is to generate perturbed samples
+		gmVector3 refrExtinction; // the extinction rate of refr color
+		double refrIndex;		// the index of refraction
 		
-		bool bShadingOn;
+		bool bShadingOn;		// this mat has shadows
+		bool bIsReflective;		// this mat is reflective
+		bool bIsDielectric;		// this mat refracts rays
 };
 
 #endif

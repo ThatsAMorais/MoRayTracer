@@ -30,6 +30,9 @@ void view_t::read( istream& ins )
     bool   seen_focal   = false;
     bool   seen_up      = false;
 
+	// set the sampling size to 4 automatically
+	n = 4;
+
     // Loop and read until we reach the end of the view construct
     while( !ins.eof() && !seen_end_tag ) 
     {
@@ -47,6 +50,7 @@ void view_t::read( istream& ins )
 	else if( cmd == "xres" )   { ins >> num_x_pixels; seen_xres = true; }
 	else if( cmd == "focal" )  { ins >> focal_length; seen_focal = true; }
 	else if( cmd == "up" )     { ins >> up;           seen_up = true; }
+	else if( cmd == "n" )	   { ins >> n; }
     }
     
 	// Make sure we've seen every command at least once

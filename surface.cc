@@ -38,7 +38,7 @@ void surface_t::read( std::istream& ins )
     //cout << "surface_t::read" << endl;
 }
 /*****************************************************************************/
-bool surface_t::intersect( ray_t& ray, double t0, double t1, hit_t& hit )
+bool surface_t::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time )
 {
     //cout << "surface_t::intersect" << endl;
     return false;

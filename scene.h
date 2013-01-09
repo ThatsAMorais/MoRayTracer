@@ -52,19 +52,19 @@ class Scene{
 		//friend std::ostream& operator << ( std::ostream& os, const view_t& );
 		char* begin_tag() { return "begin_scene"; }
 		char* end_tag()   { return "end_scene"; }
-		gmVector3 getBGColor( void ){ return background; }
+		gmVector3 getBGColor( void ){ return currentBG; }
+		//gmVector3 getBGColor1( void ){ return background1; }
+		//gmVector3 getBGColor2( void ){ return background2; }
+		void calcNextBGColor( int y, int numYPixels );
+		bool getHasTwoColors( void ){ return hasTwoBGColors; }
 
 		//
-		material* checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
-				bool checkOne=false);
+		material* checkIntersections(ray_t& ray, double t0, double t1, 
+				hit_t& hit, double time, bool checkOne=false);
 
 		//
-		bool checkReflectAndRefract(gmVector3& color, ray_t& thisRay, 
-				int recDepth, gmVector3 eye);
-
-		//
-		gmVector3 calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
-				gmVector3 eye);
+		gmVector3 calcPointColor(material* surfaceMat, ray_t& ray, 
+				hit_t& hit, gmVector3 eye, int recDepth, double time);
 
 		//
 		surfaceList* getSurfaceList() { return &surfacesInScene; }
@@ -74,9 +74,13 @@ class Scene{
 		list<surface_t*> surfacesInScene;
 		list<Light*> lightsInScene;
 
-		gmVector3 background;
-		
+		gmVector3 background1;
+		gmVector3 background2;
+		gmVector3 currentBG;
+
+		bool hasTwoBGColors;
 };
+
 
 
 #endif

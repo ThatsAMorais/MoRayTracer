@@ -1,0 +1,676 @@
+begin_frame
+
+begin_scene
+	background 0 0 0.2
+	
+	# positional light
+	begin_light
+		position 3 3 1
+		color 0.7 0.7 0.0
+	end_light
+
+	# positional light
+	begin_light
+		position -3 3 1
+		color 1.0 0.0 0.0
+	end_light
+
+	# directional light
+	begin_light
+		direction 1 1 1
+		color 0.7 0.7 0.7
+	end_light
+
+	begin_sphere
+		position -2.34 7.72 5.54
+		radius 1.22
+		time_xform	1 0 0 -5
+					0 2 0 4
+					0 0 1 4
+					0 0 0 1
+		begin_material
+  			color 0.793 0.335 0.386
+			ambient 0.362 0.027 0.69
+		 	reflectivity 0.492 0.649 0.421
+  			phong 8.18
+			gloss 0.45
+		end_material
+	end_sphere
+
+	begin_sphere
+position 5.26 8.52 0.8
+radius 0.568
+begin_material
+  color 0.172 0.736 0.211
+  ambient 0.782 0.53 0.862
+  reflectivity 0.368 0.567 0.429
+  phong 9.46
+end_material
+end_sphere
+
+
+begin_sphere
+position -8.66 -7.3 8.58
+radius 1.06933
+time_xform	1 0 0 -3
+			0 2 0 2
+			0 0 1 2
+			0 0 0 1
+begin_material
+  color 0.022 0.058 0.069
+  ambient 0.011 0.042 0.229
+  reflectivity 0.167 0.393 0.456
+  phong 14.46
+  #gloss 0.6
+end_material
+end_sphere
+
+
+begin_sphere
+position -1.58 8.38 5.68
+radius 0.716
+time_xform	1 0 0 3
+			0 3 0 2
+			0 0 1 -2
+			0 0 0 1
+begin_material
+  color 0.198 0.324 0.315
+  ambient 0.091 0.98 0.956
+  reflectivity 0.37 0.413 0.526
+  phong 24.46
+end_material
+end_sphere
+
+
+begin_sphere
+position 7.24 -6.6 9.92
+radius 0.374667
+begin_material
+  color 0.305 0.925 0.084
+  ambient 0.846 0.729 0.313
+  reflectivity 0.327 0.336 0.505
+  phong 24.14
+end_material
+end_sphere
+
+
+begin_sphere
+position -7.52 7.9 1.64
+radius 0.726667
+begin_material
+  color 0.814 0.367 0.434
+  ambient 0.087 0.808 0.276
+  reflectivity 0.364 0.043 0.75
+  phong 10.56
+end_material
+end_sphere
+
+
+begin_sphere
+position 5.76 1.68 -1.94
+radius 0.868
+begin_material
+  color 0.754 0.399 0.932
+  ambient 0.739 0.012 0.226
+  reflectivity 0.06 0.676 0.368
+  phong 18.72
+end_material
+end_sphere
+
+
+begin_sphere
+position -8.12 0.78 5.9
+radius 0.76
+begin_material
+  color 0.434 0.378 0.467
+  ambient 0.317 0.492 0.652
+  reflectivity 0.601 0.097 0.902
+  phong 22.12
+end_material
+end_sphere
+
+
+begin_sphere
+position -3.98 -4.4 -4.28
+radius 0.588
+begin_material
+  color 0.865 0.689 0.444
+  ambient 0.031 0.117 0.097
+  reflectivity 0.619 0.44 0.729
+  phong 22.42
+end_material
+end_sphere
+
+
+begin_sphere
+position -0.38 3.5 4.18
+radius 1.236
+begin_material
+  color 0.567 0.856 0.497
+  ambient 0.306 0.683 0.219
+  reflectivity 0.353 0.586 0.965
+  phong 19.48
+  gloss .5
+end_material
+end_sphere
+
+
+begin_sphere
+position 0.56 7.42 4.64
+radius 1.10533
+time_xform	1 0 0 3
+			0 2 0 1
+			0 0 1 -4
+			0 0 0 1
+begin_material
+  color 0.503 0.019 0.27
+  ambient 0.34 0.149 0.796
+  reflectivity 0.368 0.708 0.715
+  phong 21.46
+  gloss 0.05
+end_material
+end_sphere
+
+
+begin_sphere
+position 2.36 -5.1 6.92
+radius 0.601333
+begin_material
+  color 0.921 0.555 0.379
+  ambient 0.841 0.35 0.193
+  reflectivity 0.488 0.764 0.228
+  phong 17
+end_material
+end_sphere
+
+
+begin_sphere
+position -9.32 5.28 -7.52
+radius 1.21867
+begin_material
+  color 0.987 0.856 0.743
+  ambient 0.859 0.936 0.432
+  reflectivity 0.491 0.227 0.365
+  phong 18.02
+  gloss .3
+end_material
+end_sphere
+
+
+begin_sphere
+position -1.26 -5.44 -4.5
+radius 0.542667
+begin_material
+  color 0.474 0.121 0.858
+  ambient 0.235 0.793 0.818
+  reflectivity 0.395 0.029 0.237
+  phong 15.56
+end_material
+end_sphere
+
+
+begin_sphere
+position -7.14 -9.78 8.56
+radius 0.705333
+begin_material
+  color 0.776 0.404 0.443
+  ambient 0.606 0.84 0.904
+  reflectivity 0.763 0.613 0.538
+  phong 23.36
+end_material
+end_sphere
+
+
+begin_sphere
+position -7.44 3.76 -2.62
+radius 1.22267
+begin_material
+  color 0.917 0.996 0.324
+  ambient 0.49 0.499 0.772
+  reflectivity 0.743 0.47 0.183
+  phong 21.5
+  gloss .7
+end_material
+end_sphere
+
+
+begin_sphere
+position 2.88 1.8 0.1
+radius 0.185333
+begin_material
+  color 0.954 0.786 0.669
+  ambient 0.197 0.507 0.355
+  reflectivity 0.082 0.542 0.464
+  phong 23.08
+end_material
+end_sphere
+
+
+begin_sphere
+position -3.04 2.22 2.44
+radius 1.104
+begin_material
+  color 0.299 0.343 0.746
+  ambient 0.311 0.81 0.605
+  reflectivity 0.568 0.34 0.422
+  phong 23.02
+#gloss 0.4
+end_material
+end_sphere
+
+
+begin_sphere
+position 3.22 4.6 7.56
+radius 0.406667
+begin_material
+  color 0.32 0.736 0.444
+  ambient 0.708 0.416 0.282
+  reflectivity 0.626 0.522 0.465
+  phong 12.16
+end_material
+end_sphere
+
+
+begin_sphere
+position 8.48 2.74 -8.76
+radius 0.832
+begin_material
+  color 0.6 0.036 0.452
+  ambient 0.468 0.071 0.973
+  reflectivity 0.899 0.379 0.55
+  phong 9.62
+end_material
+end_sphere
+
+
+begin_sphere
+position 7.62 8.6 8.66
+radius 1.192
+begin_material
+  color 0.66 0.163 0.199
+  ambient 0.959 0.773 0.813
+  reflectivity 0.981 0.899 0.996
+  phong 20.36
+  gloss 0.8
+end_material
+end_sphere
+
+
+begin_sphere
+position -6.2 -8.1 8.52
+radius 0.621333
+begin_material
+  color 0.084 0.34 0.09
+  ambient 0.936 0.107 0.445
+  reflectivity 0.684 0.376 0.542
+  phong 22.12
+end_material
+end_sphere
+
+
+begin_sphere
+position -6.42 -1.64 7.74
+radius 0.549333
+begin_material
+  color 0.348 0.172 0.659
+  ambient 0.342 0.587 0.206
+  reflectivity 0.009 0.336 0.21
+  phong 13.02
+end_material
+end_sphere
+
+
+begin_sphere
+position 4.26 -2.56 -3.58
+radius 0.34
+begin_material
+  color 0.819 0.599 0.721
+  ambient 0.94 0.667 0.705
+  reflectivity 0.904 0.939 0.811
+  phong 11.56
+end_material
+end_sphere
+
+
+begin_sphere
+position -7.46 -7 9.68
+radius 0.877333
+begin_material
+  color 0.92 0.224 0.422
+  ambient 0.63 0.084 0.292
+  reflectivity 0.269 0.396 0.081
+  phong 26.44
+end_material
+end_sphere
+
+
+begin_sphere
+position 3.44 7 2.5
+radius 0.513333
+begin_material
+  color 0.222 0.299 0.64
+  ambient 0.298 0.19 0.524
+  reflectivity 0.042 0.898 0.713
+  phong 18.8
+end_material
+end_sphere
+
+
+begin_sphere
+position -5.82 1.62 6.38
+radius 0.448
+begin_material
+  color 0.732 0.155 0.994
+  ambient 0.273 0.776 0.85
+  reflectivity 0.004 0.379 0.769
+  phong 12.1
+end_material
+end_sphere
+
+
+begin_sphere
+position 7.2 -7.16 1.58
+radius 1.17867
+begin_material
+  color 0.993 0.205 0.621
+  ambient 0.961 0.754 0.326
+  reflectivity 0.567 0.504 0.613
+  phong 12.18
+  gloss .2
+end_material
+end_sphere
+
+
+begin_sphere
+position 8.88 -5.96 -5.96
+radius 0.674667
+begin_material
+  color 0.784 0.021 0.842
+  ambient 0.872 0.908 0.958
+  reflectivity 0.868 0.528 0.189
+  phong 16.96
+end_material
+end_sphere
+
+
+begin_sphere
+position -9.28 6.16 5.06
+radius 0.330667
+begin_material
+  color 0.303 0.333 0.133
+  ambient 0.567 0.746 0.368
+  reflectivity 0.648 0.89 0.754
+  phong 17.58
+end_material
+end_sphere
+
+
+begin_sphere
+position 0 -9.08 5.76
+radius 1.06267
+begin_material
+  color 0.249 0.99 0.303
+  ambient 0.253 0.892 0.686
+  reflectivity 0.033 0.363 0.497
+  phong 9.5
+  gloss .1
+end_material
+end_sphere
+
+
+begin_sphere
+position -6.96 9.92 9.5
+radius 0.250667
+begin_material
+  color 0.157 0.729 0.436
+  ambient 0.46 0.304 0.028
+  reflectivity 0.46 0.414 0.921
+  phong 7.54
+end_material
+end_sphere
+
+
+begin_sphere
+position -9 4.96 1.12
+radius 1.20267
+begin_material
+  color 0.794 0.697 0.699
+  ambient 0.428 0.403 0.5
+  reflectivity 0.043 0.039 0.002
+  phong 20.62
+  gloss .7
+end_material
+end_sphere
+
+
+begin_sphere
+position 2.94 0.76 -6.82
+radius 0.201333
+begin_material
+  color 0.535 0.134 0.339
+  ambient 0.504 0.629 0.049
+  reflectivity 0.692 0.215 0.127
+  phong 26.28
+end_material
+end_sphere
+
+
+begin_sphere
+position -4.3 -1.42 -3.14
+radius 0.446667
+begin_material
+  color 0.177 0.9 0.238
+  ambient 0.367 0.988 0.292
+  reflectivity 0.971 0.949 0.289
+  phong 22.9
+end_material
+end_sphere
+
+
+begin_sphere
+position 4.86 -7.12 6.58
+radius 0.52
+begin_material
+  color 0.682 0.34 0.541
+  ambient 0.261 0.042 0.36
+  reflectivity 0.569 0.826 0.232
+  phong 9.34
+end_material
+end_sphere
+
+
+begin_sphere
+position -9.54 5.22 -8.38
+radius 0.412
+begin_material
+  color 0.19 0.425 0.996
+  ambient 0.69 0.626 0.524
+  reflectivity 0.367 0.677 0.234
+  phong 8.14
+end_material
+end_sphere
+
+
+begin_sphere
+position 2.28 -6.64 -5.9
+radius 0.477333
+begin_material
+  color 0.312 0.386 0.1
+  ambient 0.916 0.552 0.578
+  reflectivity 0.346 0.726 0.994
+  phong 17.58
+end_material
+end_sphere
+
+
+begin_sphere
+position 8.92 -4.2 2.94
+radius 1.29333
+begin_material
+  color 0.051 0.08 0.631
+  ambient 0.312 0.886 0.214
+  reflectivity 0.593 0.857 0.627
+  phong 14.1
+#gloss .4
+end_material
+end_sphere
+
+
+begin_sphere
+position 0.24 -8.2 -1.76
+radius 0.638667
+begin_material
+  color 0.61 0.969 0.189
+  ambient 0.62 0.433 0.987
+  reflectivity 0.274 0.355 0.641
+  phong 24.76
+end_material
+end_sphere
+
+
+begin_sphere
+position -3.24 1.32 5.4
+radius 0.378667
+begin_material
+  color 0.856 0.417 0.606
+  ambient 0.205 0.059 0.217
+  reflectivity 0.26 0.849 0.237
+  phong 17.36
+end_material
+end_sphere
+
+
+begin_sphere
+position 8.9 5.66 7.46
+radius 0.610667
+begin_material
+  color 0.873 0.637 0.289
+  ambient 0.757 0.314 0.471
+  reflectivity 0.483 0.607 0.478
+  phong 21.58
+end_material
+end_sphere
+
+
+begin_sphere
+position -8 -0.82 2.36
+radius 0.584
+begin_material
+  color 0.025 0.388 0.074
+  ambient 0.493 0.358 0.27
+  reflectivity 0.233 0.157 0.681
+  phong 20.98
+end_material
+end_sphere
+
+
+begin_sphere
+position -1.66 6.78 1.38
+radius 0.484
+begin_material
+  color 0.622 0.794 0.173
+  ambient 0.682 0.39 0.292
+  reflectivity 0.847 0.431 0.462
+  phong 22.82
+end_material
+end_sphere
+
+
+begin_sphere
+position -8.86 -7.7 0.42
+radius 0.209333
+begin_material
+  color 0.574 0.491 0.947
+  ambient 0.537 0.74 0.054
+  reflectivity 0.951 0.231 0.021
+  phong 7.6
+end_material
+end_sphere
+
+
+begin_sphere
+position -8.04 -3.5 -8.38
+radius 0.688
+begin_material
+  color 0.516 0.002 0.231
+  ambient 0.338 0.58 0.218
+  reflectivity 0.139 0.796 0.404
+  phong 7.42
+end_material
+end_sphere
+
+
+begin_sphere
+position 9.4 7.24 6.24
+radius 0.505333
+begin_material
+  color 0.977 0.685 0.536
+  ambient 0.207 0.759 0.857
+  reflectivity 0.904 0.176 0.483
+  phong 21.88
+end_material
+end_sphere
+
+
+begin_sphere
+position -0.02 8.22 -7.46
+radius 1.26667
+begin_material
+  color 0.236 0.56 0.818
+  ambient 0.244 0.711 0.805
+  reflectivity 0.105 0.563 0.049
+  phong 25.68
+#gloss .6
+end_material
+end_sphere
+
+
+begin_sphere
+position -4.18 -2.5 9.1
+radius 0.818667
+begin_material
+  color 0.589 0.768 0.993
+  ambient 0.822 0.982 0.717
+  reflectivity 0.918 0.805 0.882
+  phong 7.6
+end_material
+end_sphere
+
+
+begin_sphere
+position -8.14 1.48 -7.48
+radius 0.790667
+begin_material
+  color 0.486 0.253 0.543
+  ambient 0.179 0.377 0.762
+  reflectivity 0.074 0.814 0.713
+  phong 22.5
+end_material
+end_sphere
+
+begin_sphere
+position 0 0 -250
+radius 250
+begin_material
+  color 0.486 0.253 0.543
+  ambient 0.179 0.377 0.762
+  reflectivity 0.9 0.9 0.7
+  phong 22.5
+#gloss .3
+end_material
+end_sphere
+
+end_scene
+begin_view
+coi    9 -13 0
+eye    0 0 10
+eye    0 0 15
+eye    9 5 5
+vwidth 1
+aspect 1
+xres   300
+focal   1
+up     0 1 0
+n		3
+end_view
+end_frame

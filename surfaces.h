@@ -32,7 +32,7 @@ class sphere : public surface_t{
 		char* name() { return "sphere"; }
 		// Over-ridden virtual funcs
 		void read( std::istream& ins );
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit );
+		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
 		void print( std::ostream& os );
 
 		double getRadius( void ){ return sphereRadius; }
@@ -63,7 +63,8 @@ class plane{
 		vertexPtrList* getVertices( void ){ return &vertices; }
 
 		void addVertex( gmVector4* newVertex ){ vertices.push_back(newVertex); }
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit );
+		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, 
+				bool doTransform, gmMatrix4 T );
 	private:
 		gmVector3 normal;
 		vertexPtrList vertices;
@@ -88,17 +89,17 @@ class polygon : public surface_t{
 		char* name() { return "polygon"; }
 		// Over-ridden virtual funcs
 		void read( std::istream& ins );
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit );
+		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
 		void print( std::ostream& os );
 
 		// returns the vertex list
 		vertexPtrList getVertices( void ){ return vertices; }
 
 	protected:
-		vertexPtrList vertices;		// type vector< gmVector4 >
+		vertexPtrList vertices;		// type vector< gmVector4 * >
 		planeList polyList;			// list of faces
 		gmMatrix4 transformMatrix;	// the transformation matrix
-
+		
 		// surface's material 
 		//material mat			(inherited from surface_t)
 };

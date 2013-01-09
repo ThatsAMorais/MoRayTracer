@@ -26,3 +26,32 @@ gmVector4 ThreeToFour(gmVector3* vec3){
 	return vec4;
 }
 
+//generates a psuedo-random double between 0.0 and 0.999...
+double randDouble()
+{
+    return rand()/(double(RAND_MAX)+1);
+}
+
+//generates a psuedo-random double between min and max
+double randDouble(double min, double max)
+{
+    if (min>max){
+        return randDouble()*(min-max)+max;
+    }
+    else{
+        return randDouble()*(max-min)+min;
+    }
+}
+
+int randInt(int min, int max)
+{
+	if(min>max){
+		return max + ( rand() % (min-max) );
+	}
+	else{
+		return min + ( rand() % (max-min) );
+	}
+}
+
+
+

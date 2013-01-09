@@ -1,12 +1,12 @@
 begin_frame
 
   begin_scene
-    background .4 .4 .4
+    background .44 .11 .0
 
     # directional light
     begin_light
       direction 0 1 0
-      color 1 1 1
+      color 1 .5 1
     end_light
 
     # positional light
@@ -15,75 +15,66 @@ begin_frame
       color 1 1 0.5
     end_light
 
-    # upper right light blue sphere
-    begin_sphere
-      position 1.5 -1.5 1
-      radius .4
-      begin_material
-        color .5 .5 1
-        ambient .3 .4 .5
-        phong 5
-        reflectivity .7 .7 .7
-      end_material
-    end_sphere
-
     # upper left light blue sphere
     begin_sphere
-      position -1.5 -1.5 0
-      radius .4
+      position 2.5 1.5 1.76
+      radius .3
       begin_material
         color .5 .5 1
         ambient .3 .4 .5
-        phong 5
+        phong 7
         reflectivity .7 .7 .7
-		gloss 0.1
-      end_material
-	  time_xform 1 0 0 0.5
-		   		 0 1 0 0
-				 0 0 1 0
-				 0 0 0 1 
-    end_sphere
-    # left green sphere
-    begin_sphere
-      position .9 0 .5
-      radius .4
-      begin_material
-        color 0 .9 0
-        ambient .3 .4 .5
-        phong 5
-        reflectivity .7 .7 .7
-		gloss 0.4
       end_material
     end_sphere
 
-    # right green sphere
+	# upper right light blue sphere
     begin_sphere
-      position -.9 0 0
-      radius 1
+      position 3.5 0.5 -6.5
+      radius .8
       begin_material
-        color 0 .9 0
+        color .75 .25 .1
         ambient .3 .4 .5
         phong 5
         reflectivity .7 .7 .7
-		gloss 0.2
       end_material
-	  time_xform 1 0 0 -0.7
-		   		 0 1 0 0
-				 0 0 1 0
-				 0 0 0 1 
     end_sphere
 
-    # center red sphere
+	# upper right light blue sphere
     begin_sphere
-      position 0 0 0
-      radius 1.1
+      position -5.5 1.5 -5
+      radius 1.7
       begin_material
-        color .9 0 0
+        color .75 .25 1
         ambient .3 .4 .5
-        phong 5
-       reflectivity .7 .7 .7
+        phong 2
+        reflectivity .4 .4 .4
       end_material
     end_sphere
+
+
+# a pyramid consisting of 4 triangles and a plane
+	begin_poly
+      vertex  0  1  0 # 0
+      vertex  1 -1  1 # 1
+      vertex  1 -1 -1 # 2
+      vertex -1 -1 -1 # 3
+      vertex -1 -1  1 # 4
+      poly 1 4 0		# back left
+      poly 2 1 0		# back right
+      poly 4 3 2 1		# the bottom
+      poly 4 3 0		# front left
+      poly 3 2 0		# front right
+      transform 2.95442 0 -0.520945 0
+	  			0 3 0 0.5 
+				0.520945 0 2.95442 0 
+				0 0 0 1
+      begin_material
+        ambient .3 .4 .5
+        color 0 0 0
+        phong 17
+		reflectivity .9 .9 .9
+      end_material
+    end_poly
 
     # a mirrored surface that the spheres are floating above
     begin_poly
@@ -101,34 +92,34 @@ begin_frame
       poly 3 2 6 7
       poly 0 3 7 4
       poly 1 5 6 2
-      transform  2.828 0   2.828  0 
-                 0     0.5 0     -3 
-                -2.828 0   2.828  0 
-                 0     0   0      1 
+      transform  2.59808 0 1.5 0
+	  			 0 3 0 0.5
+				 -1.5 0 2.59808 0
+				 0 0 0 1 
+ 
       begin_material
         ambient .3 .4 .5
-        color 0 0 0
+        color .5 .65 .25
         phong 15
-		reflectivity 1 1 1
-		gloss 0.2
+		reflectivity .7 .7 .7
       end_material
     end_poly
+
 
   end_scene
 
   begin_view
     coi    0 0 0
-    eye    0 0 7
+    eye    0 0 10
 	eye    0 5 15  # assign2_eye_0-5-15
-	eye    0 0 5   # assign2_eye_0-0-5
+	#eye    0 0 5   # assign2_eye_0-0-5
     vwidth 1
-    aspect 1.0
-    xres   600
+    aspect 1.78
+    xres   500
     focal  2
     focal  3
     focal  1
     up     0 1 0
-	n	   4
   end_view
 
 end_frame

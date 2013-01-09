@@ -28,6 +28,7 @@ begin_frame
         ambient .6 .6 .6
         phong 5
         reflectivity 0 0 0
+		gloss 0.5
       end_material
     end_sphere
 
@@ -83,6 +84,7 @@ begin_frame
         color .5 .5 1
         phong 5
         reflectivity 1 1 1
+		gloss 0.09
       end_material
     end_poly
 
@@ -115,7 +117,7 @@ begin_frame
         ambient .2 .2 1
         color .5 .5 1
         phong 5
-        reflectivity .9 .9 .9
+        reflectivity .99 .99 .99
       end_material
     end_poly
 
@@ -135,14 +137,19 @@ begin_frame
 # rotate <0, 1, 0> -35 deg
 # translated <2, 1.5, 0>
        transform 1.81262 0 -0.845237 2
-                 0 3 0 1.5
+                 0 2.65 0 1.5
                  0.845237 0 1.81262 0
                  0 0 0 1
+	   time_xform	1 0 0 0
+	   				0 1 0 .35
+					0 0 1 0
+					0 0 0 1
       begin_material
         ambient .2 .2 .2
         color .1 .8 .1
         phong 5
         reflectivity .9 .9 .9
+		gloss 0.8
       end_material
     end_poly
 
@@ -151,15 +158,16 @@ begin_frame
   begin_view
     coi    -.5 0 0
     eye    0 0 10
-	eye    0 2 10  # assign2_eye_0-5-15
+#	eye    0 2 10  # assign2_eye_0-5-15
 #	eye    0 0 5   # assign2_eye_0-0-5
     vwidth 1
     aspect 1.0
-    xres   600
+    xres   200
     focal  2
     focal  3
     focal  1
     up     0 1 0
+	n		4
   end_view
 
 end_frame

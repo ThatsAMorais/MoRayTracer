@@ -9,6 +9,7 @@
 #include "scene.h"
 #include "surfaces.h"
 #include "functions.h"
+#include <gmMat4.h>
 
 using namespace std;
 
@@ -112,8 +113,12 @@ void Scene::read( istream& ins ){
 		}
 		// Read in commands
 		else if( cmd == "background" ){ 
-			ins >> background;
+			ins >> background1;
 			seen_bg = true;
+		}
+		else if(cmd == "background2" ){
+			ins >> background2;
+			hasTwoBGColors = true;
 		}
 		else if( cmd == "begin_sphere" ){
 			surface = new sphere();
@@ -151,13 +156,16 @@ void Scene::read( istream& ins ){
 		cerr << "Error: did not see a background command in scene block!" << endl;
     }
 
+	if(!hasTwoBGColors)
+		currentBG = background1;
+
 	if(!seen_a_surface)
 		cerr << "Did not see any surfaces in the script." << endl;
 }
 /////////////////////////////////////////////////
 
 material* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit, 
-		bool checkOne)
+		double time, bool checkOne)
 {	
 	//if(!checkOne)
 		//cerr << "checking a surface" << endl;
@@ -171,7 +179,7 @@ material* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit
 			surfaceIter++)
 	{
 		/* If ray intersects this object { */
-		if((*surfaceIter)->intersect(ray, t0, t1, hit)){
+		if((*surfaceIter)->intersect(ray, t0, t1, hit, time)){
 
 			// ---Optimization---
 			// for checking a single intersection
@@ -180,10 +188,8 @@ material* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit
 				return (*surfaceIter)->getMaterial();
 			}
 
-			//if(hit.getT() < t1){
-				t1 = hit.getT();
-				nearestSurface = (*surfaceIter);
-			//}
+			t1 = hit.getT();
+			nearestSurface = (*surfaceIter);
 		}
 		//else
 		//	hit.setT(std::numeric_limits<double>::infinity());
@@ -195,81 +201,23 @@ material* Scene::checkIntersections(ray_t& ray, double t0, double t1, hit_t& hit
 	return NULL;
 }
 
-bool Scene::checkReflectAndRefract(gmVector3& color, ray_t& thisRay, int recDepth, gmVector3 eye){
-
-	hit_t hit;
-	material* hitSurfaceMat;
-	gmVector3 hitSurfaceCol,
-			  tempCol;
-
-	// determine if the reflection ray hits another suface.. //
-	//   if it does, calculate reflection ray and recurse.   //
-	if( (hitSurfaceMat =checkIntersections(
-				thisRay, 
-				gmEPSILON,
-				std::numeric_limits<double>::infinity(), 
-				hit)) )
-	{
-		bool reflResult = false;
-
-		ray_t nextRay;	
-		if(hitSurfaceMat->getReflect().length() != 0 || recDepth <= 10){
-			recDepth++;
-
-			// parameters used to calculate next ray from previous ray
-			gmVector3 p = thisRay.get_origin() + hit.getT()*thisRay.get_dir_norm(),
-					  normal = hit.getNormal(),
-					  dirNorm = thisRay.get_dir_norm();
-
-			// calculate the next ray direction
-			gmVector3 r = dirNorm - 2 * ( dot(dirNorm, normal) ) * normal;
-		
-			// initialize the next ray to be cast
-			nextRay.set_origin(p);
-			nextRay.set_dir(r);
-
-			// recurse to determine next reflection
-			reflResult = checkReflectAndRefract(
-					tempCol,
-					nextRay,
-					recDepth,
-					eye);
-		}
-
-		//c1 = calc_color(p1)
-		//c1 = c1 + (1-c1)*c2*reflectivity1
-		//c2 = calc_color(p2)
-
-		// convenience vars for storing the colors
-		gmVector3 reflectivity = hitSurfaceMat->getReflect();
-		//
-		hitSurfaceCol = calcPointColor(hitSurfaceMat, nextRay, hit, eye);
-		//
-		gmVector3 tempColor;
-
-
-		if(reflResult){
-			tempColor[0] = hitSurfaceCol[0] + ( ( 1-hitSurfaceCol[0] )*tempCol[0]*reflectivity[0] );
-			tempColor[1] = hitSurfaceCol[1] + ( ( 1-hitSurfaceCol[1] )*tempCol[1]*reflectivity[1] );
-			tempColor[2] = hitSurfaceCol[2] + ( ( 1-hitSurfaceCol[2] )*tempCol[2]*reflectivity[2] );
-
-
-		}
-		else{
-			tempColor = hitSurfaceCol;
-		}
-
-		color = tempColor;
-
-		return true;
-	}
-	else
-		return false;
-
+void Scene::calcNextBGColor( int y, int numYPixels ){
+	// this function calculates the background color as a ratio to rows rendered
+	// DOESN'T WORK RIGHT
 	
+	// so, if y = 0 then background1 will be the color
+	// and if y = numYPixels then background2 will be the color
+	// otherwise bgColor = ( (1-ratio)*bg1 + ratio*bg2 ) / 2
+	double ratio = y / numYPixels;
+	currentBG[0] = ( background1[0]*( 1.0-ratio ) )/2 + ( background2[0]*ratio )/2;
+	currentBG[1] = ( background1[1]*( 1.0-ratio ) )/2 + ( background2[1]*ratio )/2;
+	currentBG[2] = ( background1[2]*( 1.0-ratio ) )/2 + ( background2[2]*ratio )/2;
+
+	currentBG = currentBG / 2;
 }
 
-gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gmVector3 eye){
+gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, 
+		gmVector3 eye, int recDepth, double time){
 
 	// the mat of the surface that the ray intersected
 	
@@ -298,7 +246,6 @@ gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gm
 	// light list iterator ...
 	list<Light*>::iterator lightIter;
 
-
 	// p => from the ray equation
 	gmVector3 rt = ray.get_p();
 	gmVector3 normal = hit.getNormal();
@@ -325,9 +272,6 @@ gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gm
 			l = l / l.length();					// this is somehow 0
 		}
 
-		// shoot a shadow ray and determine if the 
-		// light occludes "this" surface.
-									
 		ray_t shadowRay;
 		hit_t intersection;
 
@@ -342,7 +286,8 @@ gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gm
 						gmEPSILON,
 						std::numeric_limits<double>::infinity(),
 						intersection,
-						true)))
+						time,
+						false)))
 		{
 			/////////////
 			// DIFFUSE //
@@ -397,6 +342,104 @@ gmVector3 Scene::calcPointColor(material* surfaceMat, ray_t& ray, hit_t& hit, gm
 			finalColor += diffuse + specular;
 		}
 	}
+
+
+	// if material is reflective, cast reflection rays
+	ray_t nextRay;	
+	if(surfaceMat->getReflect().length() != 0 || recDepth <= 10){
+
+		recDepth++;
+
+		// parameters used to calculate next ray from previous ray
+		gmVector3 p = ray.get_origin() + hit.getT()*ray.get_dir_norm(),
+				  normal = hit.getNormal(),
+				  dirNorm = ray.get_dir_norm();
+
+		// calculate the next ray direction
+		gmVector3 r = dirNorm - 2 * ( dot(dirNorm, normal) ) * normal;
+		gmVector3 w;
+
+		gmVector3 rPrime;
+		double glossIndex = surfaceMat->getGloss();
+		// if this object has a glossy material
+		if( glossIndex > 0 ){
+
+			// calculate the 
+			w = r / r.length();
+
+			// get u and v
+			gmVector3 t = w;
+
+			// determine the lowest magnitude coord in t and set it to "1"
+			if( t[0] < t[1] ){
+
+				if( t[0] < t[2] )
+					t[0] = 1.0;
+				else
+					t[2] = 1.0;
+			}
+			else if( t[2] < t[1] ){
+
+				if( t[2] < t[0] )
+					t[2] = 1.0;
+				else
+					t[0] = 1.0;
+			}
+			else
+				t[1] = 1;
+
+			// calculate the orthonormal vectors
+			gmVector3 u = cross(t,w) / gmVector3(cross(t,w)).length();
+			gmVector3 v = cross( w, u );
+
+			double xRand, 
+				   yRand;
+
+			do { // Rejection sampling
+				xRand = randDouble();
+				yRand = randDouble();
+			}while( ((xRand*xRand) + (yRand*yRand)) > 1 );
+
+
+			// calculate the coefficient to the u and v vectors
+			double uCoeff = -(glossIndex/2) + (xRand*glossIndex);
+			double vCoeff = -(glossIndex/2) + (yRand*glossIndex);
+
+			rPrime = r + u*uCoeff + v*vCoeff;
+			rPrime.normalize();
+		}
+		else
+			rPrime = r;
+
+		// initialize the next ray to be cast
+		nextRay.set_origin(p);
+		nextRay.set_dir(rPrime);
+
+		// cast a ray from this reflective surface to check for a hit
+		hit_t hit;
+		material* reflectedMat = checkIntersections( nextRay, gmEPSILON,
+				std::numeric_limits<double>::infinity(),
+				hit, time);
+
+		gmVector3 tempColor;
+		// if there was an intersection with an object
+		if(reflectedMat){
+			tempColor = calcPointColor(reflectedMat, nextRay, hit, eye, recDepth, time);
+		}
+
+		// This is an option to reflect the Background color when no objects are hit
+		//else{
+			//set the reflected color to the background color
+		//	tempColor = currentBG;
+		//}
+
+		finalColor[0] = finalColor[0] + ( ( 1-finalColor[0] )*tempColor[0]*surfaceMat->getReflect()[0] );
+		finalColor[1] = finalColor[1] + ( ( 1-finalColor[1] )*tempColor[1]*surfaceMat->getReflect()[1] );
+		finalColor[2] = finalColor[2] + ( ( 1-finalColor[2] )*tempColor[2]*surfaceMat->getReflect()[2] );
+	}
+
+	// Do refraction stuff here
+	
 
 	return finalColor;
 }

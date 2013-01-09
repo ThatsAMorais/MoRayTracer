@@ -19,6 +19,7 @@
 #include "ray.h"
 #include "hit.h"
 #include "material.h"
+#include <gm.h>
 
 class surface_t 
 {
@@ -42,7 +43,7 @@ public:
   //           multiple copies of the same command, the values given by the last
   //           command instance take effect.
 
-  virtual bool intersect( ray_t& ray, double t0, double t1, hit_t& hit );
+  virtual bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time);
   // requires: length( ray.dir ) != 0, t0 > 0, t1 > 0, t1 > t0
   //  ensures: IFF ray strikes this surface, THEN 
   //           this->hit( ray, t0, t1, hit ) == true, AND
@@ -58,9 +59,15 @@ public:
 
   material* getMaterial( void ){ return &mat; }
   // get the surfaces' material
+
+  gmMatrix4* getTimeMatrix( void ){ return &timeTransform; }
+  // get the time matrix for this object
+
  
 protected:
   material mat;
+  gmMatrix4 timeTransform;
+  bool changesWithTime;
 };
 
 #endif

@@ -28,6 +28,16 @@ void sphere::read( std::istream& ins ){
 	bool   seen_radius   = false;
 	bool   seen_mat		 = false;
 
+	// init the vars
+	mat = material();
+	timeTransform = gmMatrix4::identity();
+	sphereRadius = 0.0;
+	sphereRadiusSqrd = 0.0;
+	sphereCenter = gmVector3();
+
+	// Oh, this is just some boolshit over here
+	changesWithTime = false;
+
     // Loop and read until we reach the end of the view construct
     while( !ins.eof() && !seen_end_tag ) 
     {
@@ -57,6 +67,10 @@ void sphere::read( std::istream& ins ){
 			mat = *m;
 			seen_mat = true;
 		}
+		else if( cmd == "time_xform" ){
+			ins >> timeTransform;
+			changesWithTime = true;
+		}
     }
 
 	if(!(seen_end_tag && seen_position && seen_radius && seen_mat)){
@@ -64,21 +78,49 @@ void sphere::read( std::istream& ins ){
 	}
 }
 
-bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
+bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time ){
+
+	double radiusAtT,
+		   radiusSqrd;
+	gmVector3 center;
+	gmVector4 tempCenter;
+
+
+	// if we aren't at t=0 and this sphere has a time_xform specified ...
+	// 	...move the sphere ...
+	if( changesWithTime && time > 0 ){
+		// Calculate the time_xform at time
+		gmMatrix4 transAtTime = gmMatrix4 ( time*timeTransform ) + ( (1.0 - time) * gmMatrix4::identity() ) ;
+
+		// Apply the time transformation
+		// to the radius
+		radiusAtT = transAtTime[0][0] * sphereRadius;
+		radiusSqrd = radiusAtT * radiusAtT;
+
+		// to the center of the sphere
+		tempCenter = transAtTime * ThreeToFour(&sphereCenter);
+		center = FourToThree(&tempCenter);
+	}
+	// ...otherwise use the usual radius and center
+	else{
+		radiusAtT = sphereRadius;
+		radiusSqrd = sphereRadiusSqrd;
+		center = sphereCenter;
+	}
 
 	//
 	// I - Is r.origin inside/outside the sphere//
 	/////////////////////////////////////////////
 	
 	// oc
-	gmVector3 oc = ( sphereCenter - ray.get_origin() );
+	gmVector3 oc = ( center - ray.get_origin() );
 	double ocLenSqrd = pow( oc.length(), 2 );	// the length of 'oc' squared
 	double tempT;
 	
 	bool bRayOriginOutsideSphere = false;
 	
 	// Is r.origin inside or outside the sphere?
-	if( ocLenSqrd >= sphereRadius*sphereRadius )
+	if( ocLenSqrd >= radiusAtT*radiusAtT )
 		bRayOriginOutsideSphere = true;
 	
 	//
@@ -103,7 +145,7 @@ bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
 	///////
 
 	// thc -> halfcord distance
-	double thcSqrd = sphereRadiusSqrd - ocLenSqrd + tca*tca;
+	double thcSqrd = radiusSqrd - ocLenSqrd + tca*tca;
 
 	if( bRayOriginOutsideSphere && thcSqrd < 0 ){
 		//hit.setT( numeric_limits<double>::infinity() );
@@ -129,7 +171,7 @@ bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
 	ray.set_p( tempT );
 
 	// calculate the normal of the sphere
-	gmVector3 vec = ray.get_p() - sphereCenter;
+	gmVector3 vec = ray.get_p() - center;
 	vec.normalize();
 	
 	// store the normal in the hit
@@ -150,7 +192,25 @@ void sphere::print( std::ostream& os ){
 plane::plane( void ){}
 plane::~plane( void ){}
 
-bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit){
+bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTransform, gmMatrix4 T){
+	
+	// calculate the time transformation of this face
+	vector<gmVector4> vertsAtT;
+
+	if( doTransform ){
+		for( unsigned i=0; i < vertices.size(); i++ ){
+			// causing an St9bad_alloc //
+			vertsAtT.push_back( gmVector4( T * (*(vertices[i])) ) ); //
+			/////////////////////////////
+		}
+	}
+	else{
+		for( unsigned i=0; i < vertices.size(); i++ ){
+			// causing an St9bad_alloc //
+			vertsAtT.push_back( gmVector4( (*(vertices[i])) ) ); //
+			/////////////////////////////
+		}
+	}
 
 	double denom = dot( ray.get_dir_norm(), normal );
 	
@@ -158,7 +218,7 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit){
 		return false;
 	}
 	
-	gmVector3 p0 = FourToThree( vertices[0] );
+	gmVector3 p0 = FourToThree( &vertsAtT[0] );
 	double t = dot( (p0 - ray.get_origin()) , normal );
 	t = t / denom;
 
@@ -184,25 +244,24 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit){
 		}
 
 		vector<gmVector3> tempVerts;
-		gmVector3* aVec = NULL;
 
 		// convert the coords of the poly to 2-space
-		vertexPtrList::iterator vertexIter;
-		for( vertexIter = vertices.begin();
-				vertexIter != vertices.end();
+		vector<gmVector4>::iterator vertexIter;
+		for( vertexIter = vertsAtT.begin();
+				vertexIter != vertsAtT.end();
 				vertexIter++)
 		{
-			//
-			gmVector4* vertPtr = (*vertexIter);
-			aVec = new gmVector3( 0, 0, 0 );
-			(*aVec)[0] = (*vertPtr)[u] - p[u];
-			(*aVec)[1] = (*vertPtr)[v] - p[v];
+			gmVector4 vertPtr = (*vertexIter);
 	
 			// push the nu vecta onda list
-			tempVerts.push_back( *aVec );
-
-			aVec = NULL;
+			tempVerts.push_back( gmVector3( ( vertPtr[u] - p[u] ), 
+						( vertPtr[v] - p[v] ) ,0) );
 		}
+
+		// destroy the obsolete data and prevent a memory leak
+		//for( unsigned index=0; index < vertsAtT.size(); index++ )
+		//	delete vertsAtT[index];
+		//vertsAtT.clear();
 
 		// Begin the 2D Point-in-Polygon algo //
 		// ////////////////////////////////// //
@@ -274,13 +333,21 @@ polygon::~polygon( void ){}
 
 void polygon::read( std::istream& ins ){
 	string cmd;                    	  // Buffer to hold each command
-    bool	seen_end_tag	= false;  // Stop reading at end of view block
-    int		verts_seen		= 0;  	  // Must see each command
-	bool	seen_poly		= false;
-	bool	seen_transform	= false;
-	bool    seen_mat		= false;
+    bool	seen_end_tag = false;  // Stop reading at end of view block
+    int		verts_seen = 0;  	  // Must see each command
+	bool	seen_poly = false;
+	bool	seen_transform = false;
+	bool    seen_mat = false;
 	gmVector4* vertex = NULL;
 
+	// init the vars
+	mat = material();
+	timeTransform = gmMatrix4::identity();
+	transformMatrix = gmMatrix4::identity();
+
+	// Oh, this is just some boolshit over here
+	changesWithTime = false;
+		
     // Loop and read until we reach the end of the view construct
     while( !ins.eof() && !seen_end_tag ) 
     {
@@ -356,6 +423,10 @@ void polygon::read( std::istream& ins ){
 			ins >> transformMatrix;
 			seen_transform = true;
 		}
+		else if( cmd == "time_xform" ){
+			ins >> timeTransform;
+			changesWithTime = true;
+		}
 		else if( cmd == "begin_material" ){		// material
 			// call the material's parsing func.
 			material* m = new material();
@@ -398,12 +469,20 @@ void polygon::read( std::istream& ins ){
 		gmVector3 normal = cross( (p2 - p1), (p0 - p1) );
 		normal.normalize();
 		(*planeIter).setNormal( normal );
-	}	
+	}
 }
 
-bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
+bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time){
 
-	bool intersected = false;
+	bool intersected = false,
+		 doTransform = false;
+	gmMatrix4 transAtTime;
+
+	if( changesWithTime && time > 0 ){
+		// Calculate the time_xform at time
+		transAtTime = ( time*timeTransform ) + (1.0 - time) * gmMatrix4::identity();
+		doTransform = true;
+	}
 
 	// iterate over the faces of this polygon
 	planeList::iterator polyIter;
@@ -413,7 +492,7 @@ bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
 	{
 
 		// call the intersect function
-		if( ((*polyIter).intersect(ray, t0, t1, hit)) ){
+		if( ((*polyIter).intersect(ray, t0, t1, hit, doTransform, transAtTime)) ){
 
 			intersected = true;
 
@@ -431,5 +510,6 @@ bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit ){
 void polygon::print( std::ostream& os ){
 	
 }
+
 
 
