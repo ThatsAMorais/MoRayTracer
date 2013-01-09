@@ -7,7 +7,10 @@
 // *************************************************************************
 
 #include <iostream>
+#include <fstream>
+#include <cstdlib>
 #include "material.h"
+//#include <>	// an image library
 
 void material::read( std::istream& ins ){
 	
@@ -19,20 +22,25 @@ void material::read( std::istream& ins ){
 	bool   seen_extinct = false;
 	bool   seen_refr_index = false;
 
-	// initialize the material booleans
+	//// initialize private data ////
+	// init the material booleans
 	bShadingOn = false;
 	bIsDielectric = false;
 	bIsReflective = false;
+	bIsTextureMapped = false;
 
-	// initialize private data
+	// init the material properties
 	ambient = gmVector3();
 	color = gmVector3();
 	phongExp = 1;
 	reflectivity = gmVector3();
 	gloss = 0.0;
-	refrExtinction = gmVector3(1,1,1);
+	blur = 0.0;
+	refrExtinction = gmVector3();
 	refrIndex = 0.0;
-	
+	texMap = NULL;
+	///////////
+		
 	// Loop and read until we reach the end of the view construct
 	while( !ins.eof() && !seen_end_tag ){
 		
@@ -65,20 +73,100 @@ void material::read( std::istream& ins ){
 		// reflectivity
 		else if( cmd == "reflectivity" ){ 
 			ins >> reflectivity;
-			bIsReflective = true;
+			if( reflectivity.length() != 0 )
+				bIsReflective = true;
 		}
 		// refractivity extinction
 		else if( cmd == "refract_extinct" ){
-			ins >> refrExtinction; 
+			// get the extinction coeffs
+			gmVector3 coeffs;
+			ins >> coeffs;
+
+			// calculate the natural log as an optim. for ..
+			//  k_r = exp( -log( a_r ) * t );
+      		//  k_g = exp( -log( a_g ) * t );
+			//  k_b = exp( -log( a_b ) * t );
+			refrExtinction[0] = -log( coeffs[0] );
+			refrExtinction[1] = -log( coeffs[1] );
+			refrExtinction[2] = -log( coeffs[2] );
+
+			//
 			seen_extinct=true;	
 		}
 		// refractive index
-		else if( cmd == "refract_index" ){ 
-			ins >> refrIndex; 
+		else if( cmd == "refract_index" ){
+			ins >> refrIndex;
 			seen_refr_index=true;
 		}
 		// gloss
 		else if( cmd == "gloss" ){ ins >> gloss; }
+		//blur
+		else if( cmd == "blur" ){ ins >> blur; }
+		// texture maps
+		else if( cmd == "texture" ){
+
+			////
+			// This supports .ppm only
+			/////
+
+			// a path var to the texture
+			std::string texPath;
+			
+			// read-in the texture path
+			ins >> texPath;
+
+			if( texPath[0] != '\0' ){
+
+				// open the file
+				std::ifstream texIn;
+
+				// remove quotation marks from the path
+				//  (I guess this means no spaces allowed)
+				if(texPath[0] == '\"'){
+					texPath = strtok(&texPath[1], "\"");
+				}
+
+				texIn.open(texPath.data(), std::ifstream::in);
+
+				// if successful, read-in the width and height of the texture
+				////
+				if( texIn.is_open() ){
+
+					// skip the "P#" line
+					texIn.ignore( std::numeric_limits<int>::max(), '\n' );
+
+					// get the extents of the texture
+					texIn >> texWidth;
+					texIn >> texHeight;
+				
+					// indicate a successful texture load
+					bIsTextureMapped = true;
+
+					// create a texture structure big enough to hold the image
+					texMap = new gmVector3[texWidth*texHeight];
+
+					// read-in the texture map to the array
+					for(int v=0; v<texHeight; v++){
+						for(int u=0; u<texWidth; u++){
+
+							texIn >> texMap[u + (v * texWidth)];
+							texMap[u + (v * texWidth)] = texMap[u + (v * texWidth)] / 255;
+							
+							// a little output
+							//std::cerr << x << " " << y << " " << z << "; ";
+							//std::cerr << texMap[u + (v*width)] << "; " << std::endl;
+						}
+					}
+				}
+				else
+					std::cerr << "The file was not opened" << std::endl;
+
+				// close that shit
+				texIn.close();
+			}
+			//else
+			//	std::cerr << "[ texPath[0] == \\0 ]" << std::endl;
+		}
 	}
 
 	// turn shading on/off depending on if the proper
@@ -86,11 +174,19 @@ void material::read( std::istream& ins ){
 	if( seen_ambient && seen_phong )
 		bShadingOn = true;
 
-	if( reflectivity.length() )
-		bIsReflective = true;
-
 	// determine if this material has the right properties
 	//  specified to be a dielectric
 	if( seen_extinct && seen_refr_index )
 		bIsDielectric = true;
+}
+
+gmVector3 material::getColor(double x, double y){
+
+	// map the pixel to the appropriate location
+	//  in the texture map
+	
+	int mappedX= (int)( x * (texWidth-1) ),
+		mappedY= (int)( y * (texHeight-1) );
+	
+	return texMap[mappedX + (mappedY*texWidth)];
 }

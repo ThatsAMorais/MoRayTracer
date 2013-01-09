@@ -38,10 +38,7 @@ begin_frame
         reflectivity .7 .7 .7
 		gloss 0.1
       end_material
-	  time_xform 1 0 0 0.5
-		   		 0 1 0 0
-				 0 0 1 0
-				 0 0 0 1 
+
     end_sphere
     # left green sphere
     begin_sphere
@@ -67,11 +64,7 @@ begin_frame
         reflectivity .7 .7 .7
 		gloss 0.2
       end_material
-	  time_xform 1 0 0 -0.7
-		   		 0 1 0 0
-				 0 0 1 0
-				 0 0 0 1 
-    end_sphere
+	end_sphere
 
     # center red sphere
     begin_sphere
@@ -81,7 +74,8 @@ begin_frame
         color .9 0 0
         ambient .3 .4 .5
         phong 5
-       reflectivity .7 .7 .7
+		refract_extinct 1.0 1.5 1.5
+		refract_index 
       end_material
     end_sphere
 
@@ -110,7 +104,8 @@ begin_frame
         color 0 0 0
         phong 15
 		reflectivity 1 1 1
-		gloss 0.2
+		refract_extinct 1.5 1.5 1.0
+		refract_index 2.417
       end_material
     end_poly
 
@@ -123,7 +118,7 @@ begin_frame
 	eye    0 0 5   # assign2_eye_0-0-5
     vwidth 1
     aspect 1.0
-    xres   600
+    xres   200
     focal  2
     focal  3
     focal  1

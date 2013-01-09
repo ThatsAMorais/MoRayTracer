@@ -34,3 +34,7 @@ pyramid					yes : <1,1,1>	     yes : 0.05			no
 the sand					yes : <.1,.1,.1>		no				yes
 
 //////////////////////////////////
+
+
+UPDATE::
+I submitted the assignment before implementing the super-sampled reflections.  So, i've implemented them and they are in this addition.  Also in this is my multi-threaded approach.  Basically, it uses 8 threads to render equal sized blocks of the image.  The image is divided into 10 rows( numYPixels/10) and then the rows are cut in half (numXPixels/2) to make 20 blocks.  The 8 threads get a block, render it, then get another until there are no more.  I left the other version of my code up there but it may not have the super-sampled reflections so it will run faster.  Enjoy.  

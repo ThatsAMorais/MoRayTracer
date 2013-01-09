@@ -60,19 +60,24 @@ class plane{
 		~plane();
 		gmVector3 getNormal( void ){ return normal; }
 		void setNormal(gmVector3 norm){ normal = norm; }
+
 		vertexPtrList* getVertices( void ){ return &vertices; }
 
 		void addVertex( gmVector4* newVertex ){ vertices.push_back(newVertex); }
-		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, 
-				bool doTransform, gmMatrix4 T );
+		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, bool doTransform, gmMatrix4 T );
+
+		gmVector4 getVertex(int index){ return *(vertices[index]); }
+		int getNumVertices(){ return vertices.size(); }
 	private:
 		gmVector3 normal;
 		vertexPtrList vertices;
 };
 ////////////////////////////////////////////////////////////////////////
 
+
+
 // list type
-typedef list<plane> planeList;
+typedef vector<plane> planeList;
 
 ////////////////////////////////////////////////////////////////////////
 // a 'polygon' class.  it has a radius and center.
@@ -91,9 +96,9 @@ class polygon : public surface_t{
 		void read( std::istream& ins );
 		bool intersect( ray_t& ray, double t0, double t1, hit_t& hit, double time );
 		void print( std::ostream& os );
-
 		// returns the vertex list
 		vertexPtrList getVertices( void ){ return vertices; }
+		plane getFace( int faceIndex ){ return polyList[faceIndex]; }
 
 	protected:
 		vertexPtrList vertices;		// type vector< gmVector4 * >

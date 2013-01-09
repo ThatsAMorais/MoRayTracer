@@ -5,6 +5,38 @@
 
 #include "functions.h"
 
+gmVector3 castRay(ray_t& thisRay, double t0, double t1,
+		double time, int recDepth){
+
+	// the color to be returnedf
+	gmVector3 finalColor;
+	hit_t hit;
+
+	/* loop over the object list of the scene */
+	/* to check for an intersection			  */
+	surface_t* hitSurface = scene.checkIntersections(thisRay, t0, t1, hit, time);
+	//material* hitSurfaceMat = hitSurface.getMaterial();
+
+	// if we didn't hit anything
+	if( hitSurface == NULL ){
+		finalColor = scene.getBGColor();
+	}
+	// let the fun begin!
+	else{
+		//gmVector3 dirNorm = thisRay.get_dir_norm(),
+		//		  r = dirNorm - 2 * ( dot(dirNorm, hit.getNormal()) ) * hit.getNormal();
+		
+		// calculate the color at this hit location
+		finalColor = scene.calcPointColor(hitSurface, thisRay, hit, 
+				view.getEye(), recDepth, time);
+		
+		// clamp the color between 0 and 1
+		finalColor.clamp(0.0, 1.0);
+	}
+
+	return finalColor;
+}
+
 gmVector3 FourToThree(gmVector4* vec4){
 	gmVector3 vec3;
 

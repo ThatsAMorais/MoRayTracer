@@ -29,7 +29,6 @@ begin_frame
 	    ambient .1 .1 .1
         color .5 .5 1
 		phong 80
-		reflectivity 0 0 0
       end_material
     end_sphere
 
@@ -41,7 +40,6 @@ begin_frame
 	    ambient .1 .1 .1
         color .5 .5 1
 		phong 80
-		reflectivity 0 0 0
       end_material
     end_sphere
 	
@@ -53,7 +51,6 @@ begin_frame
 	    ambient .1 .1 .1
         color 0 .9 0
 		phong 15
-		reflectivity 0 0 0
       end_material
     end_sphere
 
@@ -65,7 +62,6 @@ begin_frame
 	    ambient .1 .1 .1
         color 0 .9 0
 		phong 25
-		reflectivity 0 0 0
       end_material
     end_sphere
 
@@ -77,8 +73,7 @@ begin_frame
 	    ambient .1 .1 .1
         color .9 0 0
 		phong 10
-		reflectivity 0 0 0
-      end_material
+	  end_material
     end_sphere
 
   end_scene
@@ -90,11 +85,12 @@ begin_frame
     eye    0 0 5
     vwidth 1
     aspect 1.0
-    xres   1000
+    xres   400
     focal  2
     focal  3
     focal  1
     up     0 1 0
+	n 		4
   end_view
 
 end_frame

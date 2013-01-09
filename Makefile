@@ -1,4 +1,4 @@
-###############################################################################
+##############################################################################
 #    file: makefile for ray.cc
 #  author: J. Edward Swan II
 # created: 1-17-2005
@@ -18,7 +18,7 @@ INCLUDE 	= -I../libgm
 DEFINES 	= 
 LDFLAGS		=
 LIBDIR		= -L../libgm
-LIBS		= -lgm -lm
+LIBS		= -lgm -lm -lpthread -ffast-math
 
 # For an optimized version, put this definition last.  This will substantially
 # accelerate your program.  The "-DNDEBUG" removes assertions.  The "-O2" flag

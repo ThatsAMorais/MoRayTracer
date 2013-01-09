@@ -119,8 +119,12 @@ bool sphere::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double tim
 	
 	bool bRayOriginOutsideSphere = false;
 	
+	radiusSqrd = radiusAtT*radiusAtT;
 	// Is r.origin inside or outside the sphere?
-	if( ocLenSqrd >= radiusAtT*radiusAtT )
+	//if( ocLenSqrd >= radiusAtT*radiusAtT )
+	if( gmFuzGEQ( ocLenSqrd, radiusSqrd ) )
+		bRayOriginOutsideSphere = true;
+	else if( ocLenSqrd > radiusSqrd )
 		bRayOriginOutsideSphere = true;
 	
 	//
@@ -193,32 +197,31 @@ plane::plane( void ){}
 plane::~plane( void ){}
 
 bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTransform, gmMatrix4 T){
-	
-	// calculate the time transformation of this face
-	vector<gmVector4> vertsAtT;
-
-	if( doTransform ){
-		for( unsigned i=0; i < vertices.size(); i++ ){
-			// causing an St9bad_alloc //
-			vertsAtT.push_back( gmVector4( T * (*(vertices[i])) ) ); //
-			/////////////////////////////
-		}
-	}
-	else{
-		for( unsigned i=0; i < vertices.size(); i++ ){
-			// causing an St9bad_alloc //
-			vertsAtT.push_back( gmVector4( (*(vertices[i])) ) ); //
-			/////////////////////////////
-		}
-	}
 
 	double denom = dot( ray.get_dir_norm(), normal );
 	
-	if( gmFuzEQ(denom, 0) ){
+	if( gmFuzEQ(denom, 0) ){	
 		return false;
 	}
-	
-	gmVector3 p0 = FourToThree( &vertsAtT[0] );
+
+	// calculate the time transformation of this face
+	vector<gmVector4*> vertsAtT;
+
+	if( doTransform ){
+		for( unsigned i=0; i < vertices.size(); i++ ){
+			gmVector4 vert = T * (*(vertices[i]));
+			vertsAtT.push_back( new gmVector4( vert ) ); //
+		}
+	}
+	else{
+		/*for( unsigned i=0; i < vertices.size(); i++ ){
+			gmVector4 vert = *(vertices[i]);
+			vertsAtT.push_back( new gmVector4(vert)  ); //
+		}*/
+		vertsAtT = vertices;
+	}
+
+	gmVector3 p0 = FourToThree( vertsAtT[0] );
 	double t = dot( (p0 - ray.get_origin()) , normal );
 	t = t / denom;
 
@@ -246,16 +249,17 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 		vector<gmVector3> tempVerts;
 
 		// convert the coords of the poly to 2-space
-		vector<gmVector4>::iterator vertexIter;
+		vector<gmVector4*>::iterator vertexIter;
 		for( vertexIter = vertsAtT.begin();
 				vertexIter != vertsAtT.end();
 				vertexIter++)
 		{
-			gmVector4 vertPtr = (*vertexIter);
+			gmVector4* vertPtr = (*vertexIter),
+				vert = *vertPtr;
 	
 			// push the nu vecta onda list
-			tempVerts.push_back( gmVector3( ( vertPtr[u] - p[u] ), 
-						( vertPtr[v] - p[v] ) ,0) );
+			tempVerts.push_back( gmVector3( ( vert[u] - p[u] ), 
+						( vert[v] - p[v] ) ,0) );
 		}
 
 		// destroy the obsolete data and prevent a memory leak
@@ -316,8 +320,20 @@ bool plane::intersect(ray_t& ray, double t0, double t1, hit_t& hit, bool doTrans
 			hit.setT(t);
 			hit.setNormal( normal );
 
+			if( doTransform ){
+				// destroy the dynamic data
+				for(unsigned c=0; c < vertsAtT.size(); c++)
+					delete vertsAtT[c];
+			}
+
 			return true;
 		}
+	}
+
+	if( doTransform ){
+		// destroy the dynamic data
+		for(unsigned c=0; c < vertsAtT.size(); c++)
+			delete vertsAtT[c];	
 	}
 
 	return false;
@@ -410,7 +426,6 @@ void polygon::read( std::istream& ins ){
 
 				// access the next token of the last str input
 				token = strtok(NULL, " ");
-
 			}
 
 			// 
@@ -485,18 +500,18 @@ bool polygon::intersect( ray_t& ray, double t0, double t1, hit_t& hit, double ti
 	}
 
 	// iterate over the faces of this polygon
-	planeList::iterator polyIter;
-	for(polyIter = polyList.begin();
-			polyIter != polyList.end();
-			polyIter++)
+	//planeList::iterator polyIter;
+	//for(polyIter = polyList.begin();
+	for(unsigned poly = 0;
+			poly != polyList.size();
+			poly++)
 	{
-
 		// call the intersect function
-		if( ((*polyIter).intersect(ray, t0, t1, hit, doTransform, transAtTime)) ){
-
+		if( (polyList[poly]).intersect(ray, t0, t1, hit, doTransform, transAtTime) ){
 			intersected = true;
 
 			t1 = hit.getT();
+			hit.setHitFaceIndex(poly);
 		}
 	}
 

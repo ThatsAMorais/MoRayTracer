@@ -1,0 +1,432 @@
+let SessionLoad = 1
+if &cp | set nocp | endif
+let s:cpo_save=&cpo
+set cpo&vim
+map! <S-Insert> <MiddleMouse>
+nmap K \he
+vmap [% [%m'gv``
+nmap \rvil :exe "unlet! g:VIlisp_loaded | so /home/home/.vim/plugin/VIlisp.vim"
+nmap \hI :call VIlisp_hyperspec( "index-page", 0 )
+nmap \hi :call VIlisp_hyperspec( "index", 0 )
+nmap \hg :call VIlisp_hyperspec( "grep", 1 )
+nmap \hs :call VIlisp_hyperspec( "suffix", 1 )
+nmap \hp :call VIlisp_hyperspec( "prefix", 1 )
+nmap \he :call VIlisp_hyperspec( "exact", 0 )
+nmap \cc m`[(iv%a:'<,'>s/^/; /``%/(
+nmap \il [(%a)h%i(
+nmap \fs 99\fc
+nmap \fc [(=%`'
+nmap \ms 99[(V%
+nmap \lb \tr
+nmap \tr :call VIlisp_goto_buffer_or_window( VIlisp_last_lisp )
+nmap \sb :exe "hide bu" g:VIlisp_scratch
+nmap \wtb :sb | call VIlisp_goto_buffer_or_window( g:VIlisp_test )
+nmap \tb :call VIlisp_goto_buffer_or_window( g:VIlisp_test )
+nmap \clf \cf\laf
+nmap \cf :call VIlisp_send_to_lisp( "(compile-file \"" . expand( "%:p" ) . "\")\n")
+nmap \lcf \laf
+nmap \laf :call VIlisp_send_to_lisp( "(load \"" . expand( "%:p:r" ) . "\")\n")
+nmap \lf :call VIlisp_send_to_lisp( "(load \"" . expand( "%:p" ) . "\")\n")
+nmap \ct :call VIlisp_copy_sexp_to_test()
+nmap \ci :call VIlisp_send_to_lisp( "" )
+nmap \qi :call VIlisp_send_to_lisp( "(quit)\n" )
+nmap \ri :call VIlisp_send_to_lisp( "q\n" )
+vmap \ec \eb
+vmap \es \eb
+vmap \eb :call VIlisp_eval_block()
+nmap \ec :call VIlisp_eval_next_sexp_lisp()
+nmap \es :call VIlisp_eval_defun_lisp()
+vmap ]% ]%m'gv``
+vmap a% [%v]%
+nmap gx <Plug>NetrwBrowseX
+nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetBrowseX(expand("<cWORD>"),0)
+map <S-Insert> <MiddleMouse>
+let &cpo=s:cpo_save
+unlet s:cpo_save
+set autoindent
+set background=dark
+set backspace=indent,eol,start
+set cindent
+set complete=.,w,b,u,t,i,s/home/home/.vim/plugin/lisp-thesaurus
+set fileencodings=ucs-bom,utf-8,default,latin1
+set guifont=Bitstream\ Vera\ Sans\ Mono\ 8
+set helplang=en
+set history=50
+set iminsert=0
+set mouse=a
+set printoptions=paper:a4
+set ruler
+set runtimepath=~/.vim,/var/lib/vim/addons,/usr/share/vim/addons,/usr/share/vim/vimfiles,/usr/share/vim/vim70,/usr/share/vim/vimfiles/after,/usr/share/vim/addons/after,/var/lib/vim/addons/after,~/.vim/after
+set shiftwidth=4
+set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
+set noswapfile
+set tabstop=4
+set termencoding=utf-8
+set viminfo='20,\"50
+set window=49
+let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
+let v:this_session=expand("<sfile>:p")
+silent only
+cd ~/working/lab2_old
+if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
+  let s:wipebuf = bufnr('%')
+endif
+set shortmess=aoO
+badd +170 mray.cc
+badd +141 surfaces.cc
+badd +26 surfaces.h
+badd +164 scene.cc
+badd +11 functions.h
+badd +28 ray.h
+badd +11 hit.h
+silent! argdel *
+edit mray.cc
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winheight=1 winwidth=1
+exe '1resize ' . ((&lines * 20 + 25) / 50)
+exe 'vert 1resize ' . ((&columns * 97 + 88) / 177)
+exe '2resize ' . ((&lines * 27 + 25) / 50)
+exe 'vert 2resize ' . ((&columns * 97 + 88) / 177)
+exe 'vert 3resize ' . ((&columns * 79 + 88) / 177)
+argglobal
+setlocal noarabic
+setlocal autoindent
+setlocal autoread
+setlocal balloonexpr=
+setlocal nobinary
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal cindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
+setlocal commentstring=/*%s*/
+setlocal complete=.,w,b,u,t,i,s/home/home/.vim/plugin/lisp-thesaurus
+setlocal completefunc=
+setlocal nocopyindent
+setlocal nocursorcolumn
+setlocal nocursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal noexpandtab
+if &filetype != 'cpp'
+setlocal filetype=cpp
+endif
+setlocal foldcolumn=0
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=2
+setlocal include=
+setlocal includeexpr=
+setlocal indentexpr=
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255
+setlocal keymap=
+setlocal keywordprg=
+setlocal nolinebreak
+setlocal nolisp
+setlocal nolist
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=ccomplete#Complete
+setlocal path=
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=4
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=
+setlocal noswapfile
+setlocal synmaxcol=3000
+if &syntax != 'cpp'
+setlocal syntax=cpp
+endif
+setlocal tabstop=4
+setlocal tags=
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal nowinfixheight
+setlocal nowinfixwidth
+setlocal wrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 121 - ((19 * winheight(0) + 10) / 20)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+121
+normal! 066l
+wincmd w
+argglobal
+edit ray.h
+setlocal noarabic
+setlocal autoindent
+setlocal autoread
+setlocal balloonexpr=
+setlocal nobinary
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal cindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
+setlocal commentstring=/*%s*/
+setlocal complete=.,w,b,u,t,i,s/home/home/.vim/plugin/lisp-thesaurus
+setlocal completefunc=
+setlocal nocopyindent
+setlocal nocursorcolumn
+setlocal nocursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal noexpandtab
+if &filetype != 'cpp'
+setlocal filetype=cpp
+endif
+setlocal foldcolumn=0
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=2
+setlocal include=
+setlocal includeexpr=
+setlocal indentexpr=
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255
+setlocal keymap=
+setlocal keywordprg=
+setlocal nolinebreak
+setlocal nolisp
+setlocal nolist
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=ccomplete#Complete
+setlocal path=
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=4
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=
+setlocal noswapfile
+setlocal synmaxcol=3000
+if &syntax != 'cpp'
+setlocal syntax=cpp
+endif
+setlocal tabstop=4
+setlocal tags=
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal nowinfixheight
+setlocal nowinfixwidth
+setlocal wrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 28 - ((13 * winheight(0) + 13) / 27)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+28
+normal! 039l
+wincmd w
+argglobal
+edit scene.cc
+setlocal noarabic
+setlocal autoindent
+setlocal autoread
+setlocal balloonexpr=
+setlocal nobinary
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal cindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
+setlocal commentstring=/*%s*/
+setlocal complete=.,w,b,u,t,i,s/home/home/.vim/plugin/lisp-thesaurus
+setlocal completefunc=
+setlocal nocopyindent
+setlocal nocursorcolumn
+setlocal nocursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal noexpandtab
+if &filetype != 'cpp'
+setlocal filetype=cpp
+endif
+setlocal foldcolumn=0
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=2
+setlocal include=
+setlocal includeexpr=
+setlocal indentexpr=
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255
+setlocal keymap=
+setlocal keywordprg=
+setlocal nolinebreak
+setlocal nolisp
+setlocal nolist
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=ccomplete#Complete
+setlocal path=
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=4
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=
+setlocal noswapfile
+setlocal synmaxcol=3000
+if &syntax != 'cpp'
+setlocal syntax=cpp
+endif
+setlocal tabstop=4
+setlocal tags=
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal nowinfixheight
+setlocal nowinfixwidth
+setlocal wrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 177 - ((26 * winheight(0) + 24) / 48)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+177
+normal! 040l
+wincmd w
+3wincmd w
+exe '1resize ' . ((&lines * 20 + 25) / 50)
+exe 'vert 1resize ' . ((&columns * 97 + 88) / 177)
+exe '2resize ' . ((&lines * 27 + 25) / 50)
+exe 'vert 2resize ' . ((&columns * 97 + 88) / 177)
+exe 'vert 3resize ' . ((&columns * 79 + 88) / 177)
+tabnext 1
+if exists('s:wipebuf')
+  silent exe 'bwipe ' . s:wipebuf
+endif
+unlet! s:wipebuf
+set winheight=1 winwidth=20 shortmess=filnxtToO
+let s:sx = expand("<sfile>:p:r")."x.vim"
+if file_readable(s:sx)
+  exe "source " . s:sx
+endif
+let &so = s:so_save | let &siso = s:siso_save
+doautoall SessionLoadPost
+unlet SessionLoad
+" vim: set ft=vim :

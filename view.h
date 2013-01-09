@@ -43,6 +43,7 @@ public:
   gmVector3 getVectorW( void ){ return w; }
   gmVector3 getEye( void ){ return eye; }
   int getSamplingSize( void ){ return n; }
+  double getAspectRatio( void ){ return aspect_ratio; }
 
 private:
   // Parameters calculated from public items
