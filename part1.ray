@@ -1,0 +1,67 @@
+begin_frame
+
+  begin_scene
+    background .4 .4 .4
+
+    # upper right light blue sphere
+    begin_sphere
+      position 1.5 -1.5 1
+      radius .4
+      begin_material
+        color .5 .5 1
+      end_material
+    end_sphere
+
+    # upper left light blue sphere
+    begin_sphere
+      position -1.5 -1.5 0
+      radius .4
+      begin_material
+        color .5 .5 1
+      end_material
+    end_sphere
+
+    # left green sphere
+    begin_sphere
+      position .9 0 .5
+      radius .4
+      begin_material
+        color 0 .9 0
+      end_material
+    end_sphere
+
+    # right green sphere
+    begin_sphere
+      position -.9 0 0
+      radius 1
+      begin_material
+        color 0 .9 0
+      end_material
+    end_sphere
+
+    # center red sphere
+    begin_sphere
+      position 0 0 0
+      radius 1.1
+      begin_material
+        color .9 0 0
+      end_material
+    end_sphere
+
+  end_scene
+
+  begin_view
+    coi    0 0 0
+    eye    0 0 10
+    eye    0 0 15
+    eye    0 0 5
+    vwidth 1
+    aspect 1.0
+    xres   400
+    focal  2
+    focal  3
+    focal  1
+    up     0 1 0
+  end_view
+
+end_frame
