@@ -7,8 +7,6 @@ Execution Instructions:
 	>> convert -flip outfile.ppm output.png
 	>> eog output.png			# here you could use the image viewer of your choice
 
-...and that should do it.
-
 Multi-threading:
 
 	I have had much success with multi-threading in this assignment.  I obtained a 2x render speed increase.  Although, I have also experienced a rare bug where the ray tracer crashes when using more than 2 threads, yet re-rendering the image does not crash at the same place or at all.  I cannot determine, using debuggers, where the program is crashing, but there may be some thread-unsafe area in the code.  This is the only hitch.  Otherwise, the multi-threading produces a wonderful speed-up!
